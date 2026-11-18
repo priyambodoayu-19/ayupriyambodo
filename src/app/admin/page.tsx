@@ -14,6 +14,7 @@ import {
   Film,
   FileText,
   User,
+  Layout,
   Plus,
   Trash2,
   AlertCircle
@@ -133,6 +134,28 @@ export default function AdminDashboardPage() {
     );
   };
 
+  const updateSiteHero = (field: string, value: string) => {
+    if (!site) return;
+    setSite({
+      ...site,
+      hero: {
+        ...(site.hero || {
+          badge: "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO",
+          headlinePrefix: "Translating zero-to-one concepts into",
+          headlineItalic: "shelf-ready systems",
+          headlineSuffix: ", commercial campaigns, & executive editorial.",
+          subheadline:
+            "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications.",
+          primaryButtonText: "Explore Featured Work",
+          primaryButtonLink: "#work",
+          secondaryButtonText: "Read Profile & Approach",
+          secondaryButtonLink: "/about",
+        }),
+        [field]: value,
+      },
+    });
+  };
+
   if (isLoading || !site) {
     return (
       <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center text-xs font-mono text-[#8A8881]">
@@ -201,6 +224,18 @@ export default function AdminDashboardPage() {
           </span>
 
           <button
+            onClick={() => setActiveTab("hero")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
+              activeTab === "hero"
+                ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
+                : "text-[#5A5852] hover:bg-[#F0EEE8]"
+            }`}
+          >
+            <Layout className="w-4 h-4 shrink-0" />
+            <span>Homepage Hero</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("site")}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
               activeTab === "site"
@@ -246,6 +281,184 @@ export default function AdminDashboardPage() {
 
         {/* Tab Content Editor */}
         <main className="lg:col-span-9 bg-[#F4F2EC] border border-[#E5E2DA] rounded-2xl p-6 sm:p-10 space-y-10">
+          {activeTab === "hero" && (
+            <div className="space-y-8">
+              <div className="border-b border-[#E5E2DA] pb-6 space-y-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
+                  Homepage Header &amp; Positioning
+                </span>
+                <h2 className="font-editorial text-3xl text-[#141413]">
+                  Homepage Hero Section
+                </h2>
+                <p className="text-xs text-[#64625C] pt-1">
+                  Edit the opening headline, italic emphasis, paragraph bio, and call-to-action buttons.
+                </p>
+              </div>
+
+              {/* Real-time Visual Preview Card */}
+              <div className="p-6 sm:p-8 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-6 shadow-xs">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                  Real-time Preview
+                </span>
+
+                <div className="space-y-4 max-w-3xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAE7DF] text-[11px] font-mono text-[#64625C] border border-[#DDD9CE]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#141413]" />
+                    <span>{site.hero?.badge || "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"}</span>
+                  </div>
+
+                  <h3 className="font-editorial text-2xl sm:text-3xl text-[#141413] leading-snug">
+                    {site.hero?.headlinePrefix || "Translating zero-to-one concepts into"}{" "}
+                    <span className="font-serif italic font-normal text-[#5A5852]">
+                      {site.hero?.headlineItalic || "shelf-ready systems"}
+                    </span>
+                    {site.hero?.headlineSuffix || ", commercial campaigns, & executive editorial."}
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-[#5A5852] leading-relaxed">
+                    {site.hero?.subheadline ||
+                      "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds..."}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <span className="px-4 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5]">
+                      {site.hero?.primaryButtonText || "Explore Featured Work"}
+                    </span>
+                    <span className="px-4 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full border border-[#D5D1C7] text-[#141413]">
+                      {site.hero?.secondaryButtonText || "Read Profile & Approach"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Top Tagline Badge */}
+              <div className="space-y-2">
+                <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                  Top Tagline Badge
+                </label>
+                <input
+                  type="text"
+                  value={site.hero?.badge || ""}
+                  onChange={(e) => updateSiteHero("badge", e.target.value)}
+                  placeholder="e.g. CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"
+                  className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                />
+              </div>
+
+              {/* Headline Split Fields */}
+              <div className="space-y-4 p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA]">
+                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                  Main Editorial Headline Anatomy
+                </h4>
+                <p className="text-xs text-[#64625C]">
+                  Split into three parts so you can emphasize specific words with the luxury italic font style.
+                </p>
+
+                <div className="space-y-3 pt-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
+                      1. Headline Opening Prefix
+                    </label>
+                    <input
+                      type="text"
+                      value={site.hero?.headlinePrefix || ""}
+                      onChange={(e) => updateSiteHero("headlinePrefix", e.target.value)}
+                      placeholder="e.g. Translating zero-to-one concepts into"
+                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-amber-800">
+                      2. Highlighted Emphasis Phrase (Renders in Editorial Italic)
+                    </label>
+                    <input
+                      type="text"
+                      value={site.hero?.headlineItalic || ""}
+                      onChange={(e) => updateSiteHero("headlineItalic", e.target.value)}
+                      placeholder="e.g. shelf-ready systems"
+                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-amber-300 text-sm font-serif italic text-[#141413]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
+                      3. Headline Closing Suffix
+                    </label>
+                    <input
+                      type="text"
+                      value={site.hero?.headlineSuffix || ""}
+                      onChange={(e) => updateSiteHero("headlineSuffix", e.target.value)}
+                      placeholder="e.g. , commercial campaigns, & executive editorial."
+                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Subheadline Paragraph */}
+              <div className="space-y-2">
+                <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                  Subheadline / Introductory Paragraph
+                </label>
+                <textarea
+                  rows={4}
+                  value={site.hero?.subheadline || ""}
+                  onChange={(e) => updateSiteHero("subheadline", e.target.value)}
+                  placeholder="Describe your creative partnership approach..."
+                  className="w-full px-4 py-3 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413] leading-relaxed"
+                />
+              </div>
+
+              {/* Call to Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+                <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3">
+                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                    Primary Button (Dark)
+                  </h4>
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={site.hero?.primaryButtonText || ""}
+                      onChange={(e) => updateSiteHero("primaryButtonText", e.target.value)}
+                      placeholder="Label (e.g. Explore Featured Work)"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                    />
+                    <input
+                      type="text"
+                      value={site.hero?.primaryButtonLink || ""}
+                      onChange={(e) => updateSiteHero("primaryButtonLink", e.target.value)}
+                      placeholder="Link (e.g. #work)"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3">
+                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                    Secondary Button (Outline)
+                  </h4>
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={site.hero?.secondaryButtonText || ""}
+                      onChange={(e) => updateSiteHero("secondaryButtonText", e.target.value)}
+                      placeholder="Label (e.g. Read Profile & Approach)"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                    />
+                    <input
+                      type="text"
+                      value={site.hero?.secondaryButtonLink || ""}
+                      onChange={(e) => updateSiteHero("secondaryButtonLink", e.target.value)}
+                      placeholder="Link (e.g. /about)"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === "site" && (
             <div className="space-y-8">
               <div className="border-b border-[#E5E2DA] pb-6 space-y-1">

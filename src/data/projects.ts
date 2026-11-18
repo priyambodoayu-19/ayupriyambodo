@@ -78,6 +78,18 @@ export interface ProjectItem {
   sections: ProjectSection[];
 }
 
+export interface HeroData {
+  badge: string;
+  headlinePrefix: string;
+  headlineItalic: string;
+  headlineSuffix: string;
+  subheadline: string;
+  primaryButtonText: string;
+  primaryButtonLink: string;
+  secondaryButtonText: string;
+  secondaryButtonLink: string;
+}
+
 export interface SiteMetadata {
   author: string;
   title: string;
@@ -87,6 +99,7 @@ export interface SiteMetadata {
   email: string;
   availableForProjects: boolean;
   availabilityText: string;
+  hero: HeroData;
   socials: { name: string; url: string }[];
   capabilities: { category: string; skills: string[] }[];
 }
@@ -101,6 +114,18 @@ export const DEFAULT_SITE_METADATA: SiteMetadata = {
   email: "hello@ayupriyambodo.com",
   availableForProjects: true,
   availabilityText: "Available for Select Projects",
+  hero: {
+    badge: "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO",
+    headlinePrefix: "Translating zero-to-one concepts into",
+    headlineItalic: "shelf-ready systems",
+    headlineSuffix: ", commercial campaigns, & executive editorial.",
+    subheadline:
+      "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications.",
+    primaryButtonText: "Explore Featured Work",
+    primaryButtonLink: "#work",
+    secondaryButtonText: "Read Profile & Approach",
+    secondaryButtonLink: "/about",
+  },
   socials: [
     { name: "LinkedIn", url: "https://linkedin.com/in/ayupriyambodo" },
     { name: "Behance", url: "https://behance.net/ayupriyambodo" },

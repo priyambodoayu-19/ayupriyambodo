@@ -24,39 +24,38 @@ export default function HomePage() {
             {/* Tag / Pre-headline */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#EAE7DF] border border-[#DDD9CE] text-xs font-mono tracking-wider text-[#64625C]">
               <span className="w-2 h-2 rounded-full bg-[#141413]" />
-              <span>CREATIVE DIRECTION &amp; BRAND IDENTITY PORTFOLIO</span>
+              <span>{SITE_METADATA.hero?.badge || "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"}</span>
             </div>
 
             {/* Main Editorial Headline */}
             <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-[#141413] leading-[1.04]">
-              Translating zero-to-one concepts into{" "}
+              {SITE_METADATA.hero?.headlinePrefix || "Translating zero-to-one concepts into"}{" "}
               <span className="font-serif italic font-normal text-[#5A5852]">
-                shelf-ready systems
+                {SITE_METADATA.hero?.headlineItalic || "shelf-ready systems"}
               </span>
-              , commercial campaigns, &amp; executive editorial.
+              {SITE_METADATA.hero?.headlineSuffix || ", commercial campaigns, & executive editorial."}
             </h1>
 
             {/* Sub-paragraph */}
             <p className="text-lg sm:text-xl text-[#5A5852] max-w-3xl font-normal leading-relaxed pt-2">
-              I partner with ambitious brand founders, creative directors, and executive teams
-              to build enduring visual worlds—from raw botanical formulation concepts and factory
-              pre-press dielines to high-impact launch films and bilingual investor publications.
+              {SITE_METADATA.hero?.subheadline ||
+                "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications."}
             </p>
 
             {/* Quick Action Buttons & Scroll Anchor */}
             <div className="flex flex-wrap items-center gap-4 pt-4">
               <a
-                href="#work"
+                href={SITE_METADATA.hero?.primaryButtonLink || "#work"}
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5] hover:bg-[#2D2B27] transition-colors"
               >
-                <span>Explore Featured Work</span>
+                <span>{SITE_METADATA.hero?.primaryButtonText || "Explore Featured Work"}</span>
                 <ArrowDown className="w-3.5 h-3.5" />
               </a>
               <Link
-                href="/about"
+                href={SITE_METADATA.hero?.secondaryButtonLink || "/about"}
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full border border-[#D5D1C7] text-[#141413] hover:bg-[#EAE7DF] transition-colors"
               >
-                <span>Read Profile &amp; Approach</span>
+                <span>{SITE_METADATA.hero?.secondaryButtonText || "Read Profile & Approach"}</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>

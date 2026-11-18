@@ -7,6 +7,17 @@
   "email": "hello@ayupriyambodo.com",
   "availableForProjects": true,
   "availabilityText": "Available for Select Projects",
+  "hero": {
+    "badge": "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO",
+    "headlinePrefix": "Translating zero-to-one concepts into",
+    "headlineItalic": "shelf-ready systems",
+    "headlineSuffix": ", commercial campaigns, & executive editorial.",
+    "subheadline": "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications.",
+    "primaryButtonText": "Explore Featured Work",
+    "primaryButtonLink": "#work",
+    "secondaryButtonText": "Read Profile & Approach",
+    "secondaryButtonLink": "/about"
+  },
   "socials": [
     { "name": "LinkedIn", "url": "https://linkedin.com/in/ayupriyambodo" },
     { "name": "Behance", "url": "https://behance.net/ayupriyambodo" },
