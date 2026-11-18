@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="100%" height="100%">
+  <defs>
+    <filter id="pageShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#141413" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- Editorial Background Studio Surface -->
+  <rect width="1200" height="750" fill="#EFECE6"/>
+
+  <!-- Top System Marker -->
+  <text x="90" y="60" font-family="serif" font-size="14" fill="#787368" letter-spacing="2">EDITORIAL ARCHITECTURE &amp; BILINGUAL SYSTEMS</text>
+  <text x="1110" y="60" text-anchor="end" font-family="monospace" font-size="11" fill="#787368">12-COLUMN COMPOUND GRID (EN / ID)</text>
+  <line x1="90" y1="75" x2="1110" y2="75" stroke="#D8D4CA" stroke-width="1"/>
+
+  <!-- OPEN PUBLICATION SPREAD (2-Page Center View) -->
+  <g transform="translate(100, 110)" filter="url(#pageShadow)">
+    <!-- Left Page (Verso) -->
+    <rect x="0" y="0" width="498" height="540" fill="#FAF9F5"/>
+    <!-- Page Spine Shadow -->
+    <rect x="480" y="0" width="18" height="540" fill="#E8E4DA" opacity="0.6"/>
+
+    <!-- Right Page (Recto) -->
+    <rect x="502" y="0" width="498" height="540" fill="#FAF9F5"/>
+    <rect x="502" y="0" width="18" height="540" fill="#E8E4DA" opacity="0.6"/>
+
+    <!-- Left Page Content: Title & Executive Narrative -->
+    <g transform="translate(45, 50)">
+      <!-- Folio / Header -->
+      <text x="0" y="0" font-family="monospace" font-size="8" fill="#8C877D" letter-spacing="1">04 / STRATEGIC CAPABILITIES &amp; INFRASTRUCTURE</text>
+      <line x1="0" y1="12" x2="410" y2="12" stroke="#E5E1D8" stroke-width="0.8"/>
+
+      <!-- Large Editorial Display Headline -->
+      <text x="0" y="55" font-family="serif" font-size="28" font-weight="bold" fill="#141413" letter-spacing="-0.5">Annual Strategic Report</text>
+      <text x="0" y="82" font-family="serif" font-size="18" font-style="italic" fill="#5C574E">&amp; Operational Roadmap</text>
+
+      <!-- Bilingual Column 1 (English Primary) -->
+      <g transform="translate(0, 120)">
+        <text x="0" y="0" font-family="sans-serif" font-size="8" font-weight="bold" fill="#141413" letter-spacing="1">ENGLISH SECTION</text>
+        <line x1="0" y1="6" x2="185" y2="6" stroke="#141413" stroke-width="0.8"/>
+        
+        <rect x="0" y="16" width="185" height="4" fill="#3D3A35"/>
+        <rect x="0" y="26" width="180" height="3" fill="#6E6A62"/>
+        <rect x="0" y="34" width="175" height="3" fill="#6E6A62"/>
+        <rect x="0" y="42" width="182" height="3" fill="#6E6A62"/>
+        <rect x="0" y="50" width="160" height="3" fill="#6E6A62"/>
+        
+        <rect x="0" y="65" width="185" height="3" fill="#6E6A62"/>
+        <rect x="0" y="73" width="178" height="3" fill="#6E6A62"/>
+        <rect x="0" y="81" width="168" height="3" fill="#6E6A62"/>
+
+        <!-- Stat Callout Block -->
+        <rect x="0" y="105" width="185" height="70" fill="#F3F0EA" rx="2"/>
+        <text x="15" y="132" font-family="serif" font-size="22" font-weight="bold" fill="#141413">+42.8%</text>
+        <text x="15" y="150" font-family="sans-serif" font-size="7" fill="#666158" letter-spacing="0.5">YEAR-OVER-YEAR EFFICIENCY</text>
+      </g>
+
+      <!-- Bilingual Column 2 (Bahasa Indonesia Parallel) -->
+      <g transform="translate(215, 120)">
+        <text x="0" y="0" font-family="sans-serif" font-size="8" font-weight="bold" fill="#757067" letter-spacing="1">BAHASA INDONESIA</text>
+        <line x1="0" y1="6" x2="190" y2="6" stroke="#9E998F" stroke-width="0.8"/>
+
+        <rect x="0" y="16" width="190" height="4" fill="#524E48"/>
+        <rect x="0" y="26" width="185" height="3" fill="#858178"/>
+        <rect x="0" y="34" width="180" height="3" fill="#858178"/>
+        <rect x="0" y="42" width="190" height="3" fill="#858178"/>
+        <rect x="0" y="50" width="175" height="3" fill="#858178"/>
+        <rect x="0" y="58" width="165" height="3" fill="#858178"/>
+
+        <rect x="0" y="72" width="190" height="3" fill="#858178"/>
+        <rect x="0" y="80" width="185" height="3" fill="#858178"/>
+        <rect x="0" y="88" width="170" height="3" fill="#858178"/>
+        <rect x="0" y="96" width="160" height="3" fill="#858178"/>
+
+        <rect x="0" y="112" width="190" height="3" fill="#858178"/>
+        <rect x="0" y="120" width="175" height="3" fill="#858178"/>
+      </g>
+
+      <!-- Left Page Folio / Number -->
+      <text x="0" y="460" font-family="monospace" font-size="9" fill="#8C877D">PAGE 48</text>
+    </g>
+
+    <!-- Right Page Content: Financial Data Visualization & Infographics -->
+    <g transform="translate(545, 50)">
+      <!-- Folio / Header -->
+      <text x="0" y="0" font-family="monospace" font-size="8" fill="#8C877D" letter-spacing="1">DATA INFRASTRUCTURE // EXHIBIT 4.2</text>
+      <line x1="0" y1="12" x2="410" y2="12" stroke="#E5E1D8" stroke-width="0.8"/>
+
+      <text x="0" y="40" font-family="sans-serif" font-size="12" font-weight="bold" fill="#141413">Multinational Revenue &amp; Distribution Velocity</text>
+      <text x="0" y="55" font-family="sans-serif" font-size="8" fill="#7A756B">Consolidated quarterly metrics across 14 territories</text>
+
+      <!-- High Precision Infographic Bar Graph -->
+      <g transform="translate(0, 90)">
+        <line x1="0" y1="140" x2="400" y2="140" stroke="#141413" stroke-width="1"/>
+        <line x1="0" y1="105" x2="400" y2="105" stroke="#E5E1D8" stroke-width="0.5" stroke-dasharray="2,2"/>
+        <line x1="0" y1="70" x2="400" y2="70" stroke="#E5E1D8" stroke-width="0.5" stroke-dasharray="2,2"/>
+        <line x1="0" y1="35" x2="400" y2="35" stroke="#E5E1D8" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+        <!-- Bars -->
+        <rect x="25" y="80" width="35" height="60" fill="#2E2C28"/>
+        <rect x="70" y="60" width="35" height="80" fill="#47443E"/>
+        <rect x="115" y="45" width="35" height="95" fill="#6B665E"/>
+        <rect x="160" y="25" width="35" height="115" fill="#141413"/>
+
+        <!-- Comparison Line Curve -->
+        <polyline points="42,70 87,50 132,38 177,15 230,40 280,25 340,10" fill="none" stroke="#B45309" stroke-width="2"/>
+        <circle cx="177" cy="15" r="4" fill="#B45309"/>
+        <text x="177" y="5" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#B45309">PEAK Q3</text>
+
+        <!-- Right Side Data Matrix -->
+        <g transform="translate(230, 60)">
+          <rect x="0" y="0" width="160" height="70" fill="#F6F4EF" stroke="#E2DED5" stroke-width="0.8"/>
+          <text x="12" y="20" font-family="monospace" font-size="7" fill="#807B72">INDEX: IDR 48.2B</text>
+          <text x="12" y="36" font-family="monospace" font-size="7" fill="#807B72">GROWTH: +31.4%</text>
+          <text x="12" y="52" font-family="monospace" font-size="7" fill="#141413" font-weight="bold">AUDIT: PWC VERIFIED</text>
+        </g>
+      </g>
+
+      <!-- Bottom Layout Grid Preview Lines -->
+      <g transform="translate(0, 270)">
+        <text x="0" y="0" font-family="sans-serif" font-size="8" font-weight="bold" fill="#141413" letter-spacing="1">MODULAR CATALOG MATRIX</text>
+        <rect x="0" y="15" width="125" height="120" fill="#F3F0EA" stroke="#DDD9CE" stroke-width="0.8"/>
+        <rect x="140" y="15" width="125" height="120" fill="#F3F0EA" stroke="#DDD9CE" stroke-width="0.8"/>
+        <rect x="280" y="15" width="125" height="120" fill="#F3F0EA" stroke="#DDD9CE" stroke-width="0.8"/>
+      </g>
+
+      <!-- Right Page Folio -->
+      <text x="400" y="460" text-anchor="end" font-family="monospace" font-size="9" fill="#8C877D">PAGE 49</text>
+    </g>
+  </g>
+
+  <!-- Bottom Details Bar -->
+  <text x="100" y="695" font-family="sans-serif" font-size="11" fill="#757065">FEDRIGONI ARENA 140GSM · OTABIND LAY-FLAT BINDING</text>
+  <text x="1100" y="695" text-anchor="end" font-family="sans-serif" font-size="11" fill="#757065">DESIGNED FOR C-SUITE &amp; INSTITUTIONAL INVESTORS</text>
+</svg>

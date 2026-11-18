@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAE7DF"/>
+      <stop offset="50%" stop-color="#E2DFD6"/>
+      <stop offset="100%" stop-color="#D7D3C8"/>
+    </linearGradient>
+    <linearGradient id="bottleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#F2EFE9" stop-opacity="0.7"/>
+      <stop offset="70%" stop-color="#DFDCD4" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#543D28"/>
+      <stop offset="50%" stop-color="#7D5B3A"/>
+      <stop offset="100%" stop-color="#3B2A1B"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="25" stdDeviation="30" flood-color="#141413" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="750" fill="url(#bgGrad)"/>
+
+  <!-- Minimal Architectural Grid Lines -->
+  <line x1="120" y1="80" x2="1080" y2="80" stroke="#CDC8BC" stroke-width="1"/>
+  <line x1="120" y1="670" x2="1080" y2="670" stroke="#CDC8BC" stroke-width="1"/>
+  
+  <!-- Subtle Tag & Technical Coordinates -->
+  <text x="120" y="65" font-family="serif" font-size="14" fill="#7C786E" letter-spacing="3">NIDHI BOTANICAL SKINCARE — ZERO-TO-ONE SYSTEM</text>
+  <text x="1080" y="65" text-anchor="end" font-family="monospace" font-size="12" fill="#7C786E" letter-spacing="1">SKU 01 - 05 / 2024</text>
+
+  <!-- Mineral Pedestal / Shadow Base -->
+  <ellipse cx="600" cy="580" rx="380" ry="24" fill="#24221E" opacity="0.14" filter="blur(16px)"/>
+  <rect x="260" y="560" width="680" height="30" rx="4" fill="#CAC5BA"/>
+
+  <!-- Secondary Folding Carton 01 -->
+  <g filter="url(#shadow)">
+    <rect x="290" y="240" width="130" height="320" rx="2" fill="#FAF9F5"/>
+    <line x1="310" y1="280" x2="400" y2="280" stroke="#141413" stroke-width="0.5"/>
+    <text x="310" y="272" font-family="serif" font-size="16" fill="#141413" font-weight="600" letter-spacing="2">NIDHI</text>
+    <text x="310" y="310" font-family="sans-serif" font-size="8" fill="#7A766E" letter-spacing="1">BARRIER CREAM</text>
+    <text x="310" y="324" font-family="sans-serif" font-size="7" fill="#9E9B93">50 ML / 1.7 FL. OZ.</text>
+    <rect x="310" y="525" width="25" height="15" fill="#E2DFD6"/>
+  </g>
+
+  <!-- Dropper Bottle (Center Left) Amber Glass -->
+  <g filter="url(#shadow)">
+    <!-- Dropper Cap -->
+    <path d="M 490 230 Q 500 210 510 230 Z" fill="#23211F"/>
+    <rect x="492" y="230" width="16" height="35" rx="1" fill="#3D3A36"/>
+    <rect x="487" y="265" width="26" height="12" rx="1" fill="#C4BFA5"/>
+    <!-- Amber Bottle Body -->
+    <rect x="465" y="277" width="70" height="283" rx="14" fill="url(#amberGrad)"/>
+    <!-- Label -->
+    <rect x="473" y="330" width="54" height="150" rx="1" fill="#FAF8F5"/>
+    <text x="480" y="355" font-family="serif" font-size="11" fill="#141413" font-weight="bold" letter-spacing="1">NIDHI</text>
+    <text x="480" y="375" font-family="sans-serif" font-size="6" fill="#6A655C">RESTORE OIL</text>
+    <text x="480" y="390" font-family="sans-serif" font-size="5" fill="#969288">CENTELLA 8%</text>
+    <line x1="480" y1="450" x2="520" y2="450" stroke="#CDC8BC" stroke-width="0.5"/>
+    <text x="480" y="465" font-family="monospace" font-size="5" fill="#7A766E">30 ML / 1.0 OZ</text>
+  </g>
+
+  <!-- Frosted Glass Pump Bottle (Center Hero) -->
+  <g filter="url(#shadow)">
+    <!-- Pump Dispenser -->
+    <path d="M 605 180 L 640 180 L 640 192 L 615 192 L 615 220 L 595 220 L 595 192 L 590 192 Z" fill="#1F1D1B"/>
+    <rect x="588" y="220" width="34" height="22" rx="1" fill="#1F1D1B"/>
+    <rect x="583" y="242" width="44" height="10" rx="1" fill="#BCB6A4"/>
+    <!-- Bottle Cylindrical Body -->
+    <rect x="555" y="252" width="100" height="308" rx="16" fill="url(#bottleGrad)" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.8"/>
+    <!-- Label Surface -->
+    <rect x="568" y="315" width="74" height="165" rx="1" fill="#FAF9F5"/>
+    <text x="580" y="348" font-family="serif" font-size="14" fill="#141413" font-weight="600" letter-spacing="2">NIDHI</text>
+    <line x1="580" y1="360" x2="630" y2="360" stroke="#141413" stroke-width="0.5"/>
+    <text x="580" y="380" font-family="sans-serif" font-size="7" fill="#625E56" letter-spacing="0.5">PURIFYING CLEANSER</text>
+    <text x="580" y="394" font-family="sans-serif" font-size="6" fill="#8C887E">SACRED LOTUS &amp; ALUM</text>
+    <rect x="580" y="440" width="50" height="1" fill="#E0DDD3"/>
+    <text x="580" y="458" font-family="monospace" font-size="6" fill="#7A766E">150 ML / 5.1 FL. OZ.</text>
+  </g>
+
+  <!-- Glass Jar (Right) -->
+  <g filter="url(#shadow)">
+    <!-- Metal Cap -->
+    <rect x="710" y="410" width="130" height="28" rx="3" fill="#201E1C"/>
+    <!-- Frosted Heavy Base Jar -->
+    <rect x="715" y="438" width="120" height="122" rx="10" fill="url(#bottleGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+    <rect x="725" y="465" width="100" height="65" rx="1" fill="#FAF9F5"/>
+    <text x="740" y="492" font-family="serif" font-size="12" fill="#141413" font-weight="bold" letter-spacing="1.5">NIDHI</text>
+    <text x="740" y="508" font-family="sans-serif" font-size="6.5" fill="#706B62">NIGHT RECOVERY BALM</text>
+    <text x="740" y="520" font-family="monospace" font-size="5.5" fill="#918D83">50 G / NET WT 1.7 OZ</text>
+  </g>
+
+  <!-- Secondary Carton 02 (Far Right) -->
+  <g filter="url(#shadow)">
+    <rect x="870" y="280" width="110" height="280" rx="2" fill="#E8E4DA" stroke="#DDD8CC" stroke-width="1"/>
+    <text x="888" y="318" font-family="serif" font-size="13" fill="#141413" font-weight="600" letter-spacing="2">NIDHI</text>
+    <text x="888" y="338" font-family="sans-serif" font-size="7" fill="#6A655C">BOTANICAL TONIC</text>
+    <rect x="888" y="520" width="40" height="10" fill="#CEC9BC"/>
+  </g>
+
+  <!-- Bottom Spec Bar -->
+  <rect x="120" y="625" width="960" height="1" fill="#CDC8BC"/>
+  <text x="120" y="650" font-family="sans-serif" font-size="11" fill="#635F55" letter-spacing="1">ZERO-TO-ONE BRAND ARCHITECTURE</text>
+  <text x="600" y="650" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#807B70">FROSTED BOROSILICATE / FSC-CERTIFIED KRAFT</text>
+  <text x="1080" y="650" text-anchor="end" font-family="sans-serif" font-size="11" fill="#635F55">SHELF COHESION SYSTEM</text>
+</svg>

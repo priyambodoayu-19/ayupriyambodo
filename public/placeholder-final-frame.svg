@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="frameGrad" cx="60%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#38352F"/>
+      <stop offset="70%" stop-color="#141311"/>
+      <stop offset="100%" stop-color="#080707"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#frameGrad)"/>
+
+  <!-- Wet Basalt Stone Plinth -->
+  <polygon points="180,480 620,480 720,560 80,560" fill="#1C1B19"/>
+  <polygon points="180,480 250,380 550,380 620,480" fill="#2B2925"/>
+  <polygon points="250,380 300,350 500,350 550,380" fill="#3B3934"/>
+
+  <!-- Bottle on Plinth with Raking Golden Edge -->
+  <g transform="translate(365, 170)">
+    <!-- Dropper -->
+    <path d="M 30 10 Q 35 -5 40 10 Z" fill="#141413"/>
+    <rect x="31" y="10" width="8" height="25" fill="#24221F"/>
+    <rect x="28" y="35" width="14" height="10" fill="#78716C"/>
+    <!-- Glass Bottle Body -->
+    <rect x="10" y="45" width="50" height="190" rx="10" fill="#1A1816" stroke="#44403C" stroke-width="0.8"/>
+    <!-- Intense Warm Amber Edge Line -->
+    <path d="M 58 50 L 58 225" stroke="#F59E0B" stroke-width="2" filter="blur(0.8px)"/>
+    <!-- Label -->
+    <rect x="16" y="85" width="38" height="95" fill="#FAF9F5" opacity="0.9"/>
+    <text x="20" y="108" font-family="serif" font-size="8" font-weight="bold" fill="#141413">NIDHI</text>
+    <text x="20" y="120" font-family="sans-serif" font-size="4" fill="#57534E">ACTIVE ELIXIR</text>
+  </g>
+
+  <!-- Fine Water Droplet Reflections -->
+  <ellipse cx="290" cy="400" rx="8" ry="3" fill="#D6D3D1" opacity="0.6"/>
+  <ellipse cx="480" cy="420" rx="10" ry="4" fill="#D6D3D1" opacity="0.5"/>
+
+  <!-- Slate / Cinema Grade Metadata -->
+  <text x="35" y="45" font-family="monospace" font-size="11" fill="#F59E0B" letter-spacing="1">FINAL COLOR-GRADED STILL // ARRI ALEXA LF</text>
+  <line x1="35" y1="58" x2="765" y2="58" stroke="#38352F" stroke-width="1"/>
+  <text x="35" y="565" font-family="monospace" font-size="10" fill="#A8A29E">KODAK 2383 PRINT EMULATION · DIRECTED BY AYU PRIYAMBODO</text>
+</svg>
