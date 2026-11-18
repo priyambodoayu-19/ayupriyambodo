@@ -96,6 +96,32 @@ export interface HeroData {
   secondaryButtonLink: string;
 }
 
+export interface ToolchainItem {
+  name: string;
+  role: string;
+}
+
+export interface AboutPageData {
+  badge: string;
+  headline: string;
+  subheading: string;
+  storyParagraphs: string[];
+  statusBoxTitle: string;
+  statusBoxText: string;
+  resumeButtonText: string;
+  resumeUrl: string;
+  contactButtonText: string;
+  toolchainTitle: string;
+  toolchainDescription: string;
+  toolchain: ToolchainItem[];
+}
+
+export interface WorkSectionData {
+  kicker: string;
+  title: string;
+  description: string;
+}
+
 export interface SiteMetadata {
   author: string;
   title: string;
@@ -107,6 +133,8 @@ export interface SiteMetadata {
   availabilityText: string;
   navLinks: NavLinkItem[];
   hero: HeroData;
+  about: AboutPageData;
+  workSection: WorkSectionData;
   socials: { name: string; url: string }[];
   capabilities: { category: string; skills: string[] }[];
 }
@@ -138,6 +166,41 @@ export const DEFAULT_SITE_METADATA: SiteMetadata = {
     primaryButtonLink: "#work",
     secondaryButtonText: "Read Profile & Approach",
     secondaryButtonLink: "/about",
+  },
+  workSection: {
+    kicker: "Core Curated Portfolio",
+    title: "The Four Pillars",
+    description:
+      "Every angle required by design directors, brand managers, and lead recruiters: from zero-to-one design systems and manufacturing specs to commercial film and bilingual publications.",
+  },
+  about: {
+    badge: "Profile & Perspective",
+    headline: "Designing with aesthetic authority & manufacturing rigor.",
+    subheading:
+      "Bridging the gap between zero-to-one brand storytelling and real-world physical manufacturing.",
+    storyParagraphs: [
+      "Hello. I’m Ayu Priyambodo, a Creative Director and Brand Identity Designer based in Jakarta, partnering with boutique founders and global enterprise leaders worldwide.",
+      "My practice is organized around a simple truth: the most impactful brands succeed not because of surface-level trends, but because their visual and structural systems are deeply coherent from concept to factory press.",
+      "Whether building a zero-to-one botanical skincare world like NIDHI, calculating 2-point score rules and glue-tab knockouts for complex carton packaging, directing atmospheric commercial launch films with Arri Alexa cinematography, or balancing bilingual typography for boardroom annual reports—I treat every touchpoint with obsessive editorial discipline.",
+      "This end-to-end perspective allows me to act as both a strategic creative partner to brand executives and a trusted technical collaborator on the manufacturing floor.",
+    ],
+    statusBoxTitle: "Current Status",
+    statusBoxText:
+      "Accepting select brand identity, packaging design, and creative direction engagements for Q3/Q4.",
+    resumeButtonText: "Download Curriculum Vitae",
+    resumeUrl: "#resume",
+    contactButtonText: "Initiate a Conversation",
+    toolchainTitle: "Software & Toolchain Fluency",
+    toolchainDescription:
+      "Operating with precision across industry-standard publishing, vector geometry, pre-press profiling, and color grading suites.",
+    toolchain: [
+      { name: "Adobe InDesign", role: "Long-form editorial, bilingual grid pagination, bookbinding" },
+      { name: "Adobe Illustrator", role: "Vector dielines, logotype drawing, packaging geometry" },
+      { name: "Adobe Photoshop", role: "High-end retouching, pre-press CMYK profiling, key visuals" },
+      { name: "Figma", role: "Design systems, typography scale tokens, responsive layouts" },
+      { name: "CAD / ArtiosCAD", role: "2D packaging dielines, folding tolerances, structural design" },
+      { name: "DaVinci Resolve", role: "Color grading (LUTs), commercial edit supervision, film delivery" },
+    ],
   },
   socials: [
     { name: "LinkedIn", url: "https://linkedin.com/in/ayupriyambodo" },

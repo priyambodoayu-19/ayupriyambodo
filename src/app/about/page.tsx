@@ -11,7 +11,8 @@ export const metadata = {
 };
 
 export default function AboutPage() {
-  const tools = [
+  const about = SITE_METADATA.about;
+  const tools = about?.toolchain || [
     { name: "Adobe InDesign", role: "Long-form editorial, bilingual grid pagination, bookbinding" },
     { name: "Adobe Illustrator", role: "Vector dielines, logotype drawing, packaging geometry" },
     { name: "Adobe Photoshop", role: "High-end retouching, pre-press CMYK profiling, key visuals" },
@@ -40,45 +41,36 @@ export default function AboutPage() {
         <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pb-20">
           <div className="space-y-6 max-w-4xl">
             <span className="text-xs font-mono uppercase tracking-widest text-[#8A8881]">
-              Profile &amp; Perspective
+              {about?.badge || "Profile & Perspective"}
             </span>
             <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl tracking-tight text-[#141413]">
-              Designing with aesthetic authority &amp; manufacturing rigor.
+              {about?.headline || "Designing with aesthetic authority & manufacturing rigor."}
             </h1>
             <p className="font-serif italic text-xl sm:text-2xl text-[#5A5852] leading-relaxed">
-              Bridging the gap between zero-to-one brand storytelling and real-world physical manufacturing.
+              {about?.subheading || "Bridging the gap between zero-to-one brand storytelling and real-world physical manufacturing."}
             </p>
           </div>
 
           <div className="mt-16 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 pt-12 border-t border-[#E5E2DA]">
             {/* Left Story Column */}
             <div className="lg:col-span-7 space-y-6 text-base sm:text-lg text-[#5A5852] leading-relaxed">
-              <p>
-                Hello. I’m <strong className="text-[#141413] font-semibold">{SITE_METADATA.author}</strong>, a Creative Director and Brand Identity Designer based in Jakarta, partnering with boutique founders and global enterprise leaders worldwide.
-              </p>
-              <p>
-                My practice is organized around a simple truth: <em>the most impactful brands succeed not because of surface-level trends, but because their visual and structural systems are deeply coherent from concept to factory press.</em>
-              </p>
-              <p>
-                Whether building a zero-to-one botanical skincare world like <strong>NIDHI</strong>, calculating 2-point score rules and glue-tab knockouts for complex carton packaging, directing atmospheric commercial launch films with Arri Alexa cinematography, or balancing bilingual typography for boardroom annual reports—I treat every touchpoint with obsessive editorial discipline.
-              </p>
-              <p>
-                This end-to-end perspective allows me to act as both a strategic creative partner to brand executives and a trusted technical collaborator on the manufacturing floor.
-              </p>
+              {(about?.storyParagraphs || []).map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
 
               <div className="pt-4 flex flex-wrap items-center gap-4">
                 <a
                   href={`mailto:${SITE_METADATA.email}`}
                   className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5] hover:bg-[#2D2B27] transition-colors"
                 >
-                  <span>Initiate a Conversation</span>
+                  <span>{about?.contactButtonText || "Initiate a Conversation"}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
                 <a
-                  href="#resume"
+                  href={about?.resumeUrl || "#resume"}
                   className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full border border-[#D5D1C7] text-[#141413] hover:bg-[#EAE7DF] transition-colors"
                 >
-                  <span>Download Curriculum Vitae</span>
+                  <span>{about?.resumeButtonText || "Download Curriculum Vitae"}</span>
                   <Download className="w-3.5 h-3.5" />
                 </a>
               </div>
@@ -115,10 +107,10 @@ export default function AboutPage() {
 
               <div className="p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-2">
                 <span className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                  Current Status
+                  {about?.statusBoxTitle || "Current Status"}
                 </span>
                 <p className="text-sm text-[#141413] font-medium">
-                  Accepting select brand identity, packaging design, and creative direction engagements for Q3/Q4.
+                  {about?.statusBoxText || "Accepting select brand identity, packaging design, and creative direction engagements for Q3/Q4."}
                 </p>
               </div>
             </div>
@@ -133,17 +125,17 @@ export default function AboutPage() {
                 Technical Mastery
               </span>
               <h2 className="font-editorial text-4xl sm:text-5xl text-[#141413]">
-                Software &amp; Toolchain Fluency
+                {about?.toolchainTitle || "Software & Toolchain Fluency"}
               </h2>
               <p className="text-sm text-[#64625C] leading-relaxed">
-                Operating with precision across industry-standard publishing, vector geometry, pre-press profiling, and color grading suites.
+                {about?.toolchainDescription || "Operating with precision across industry-standard publishing, vector geometry, pre-press profiling, and color grading suites."}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tools.map((tool) => (
+              {tools.map((tool, index) => (
                 <div
-                  key={tool.name}
+                  key={index}
                   className="p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-2"
                 >
                   <h3 className="font-mono text-sm font-bold text-[#141413]">
