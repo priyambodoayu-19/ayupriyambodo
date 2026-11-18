@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ComparisonSlider from "@/components/ComparisonSlider";
 import DielineInspector from "@/components/DielineInspector";
+import VideoPlayer from "@/components/VideoPlayer";
 import { PROJECTS } from "@/data/projects";
 
 export async function generateStaticParams() {
@@ -142,18 +143,32 @@ export default async function CaseStudyPage({
           )}
         </section>
 
-        {/* HERO IMAGE SHOWCASE */}
-        <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pb-20">
-          <div className="relative aspect-16/9 w-full rounded-2xl overflow-hidden border border-[#E5E2DA] bg-[#F2EFE9] shadow-md">
-            <Image
-              src={project.coverImage}
-              alt={`${project.title} Primary Showcase`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1400px) 100vw, 1400px"
-              priority
-            />
-          </div>
+        {/* HERO IMAGE OR VIDEO SHOWCASE */}
+        <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pb-20 space-y-12">
+          {project.videoData ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2">
+                <span className="text-xs font-mono uppercase tracking-widest text-[#8A8881]">
+                  Commercial Motion Direction // Final Result
+                </span>
+                <span className="text-xs font-mono text-[#8A8881] hidden sm:inline">
+                  Sound On · 1080p
+                </span>
+              </div>
+              <VideoPlayer video={project.videoData} />
+            </div>
+          ) : (
+            <div className="relative aspect-16/9 w-full rounded-2xl overflow-hidden border border-[#E5E2DA] bg-[#F2EFE9] shadow-md">
+              <Image
+                src={project.coverImage}
+                alt={`${project.title} Primary Showcase`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1400px) 100vw, 1400px"
+                priority
+              />
+            </div>
+          )}
         </section>
 
         {/* NARRATIVE & STRATEGY SECTION */}

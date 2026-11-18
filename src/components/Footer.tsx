@@ -92,7 +92,13 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-6">
-            <span className="hidden sm:inline">Set in Newsreader & Geist</span>
+            <span className="hidden sm:inline">Set in Newsreader &amp; Geist</span>
+            <Link
+              href="/admin"
+              className="hover:text-[#141413] transition-colors"
+            >
+              Studio Access
+            </Link>
             <button
               onClick={scrollToTop}
               className="inline-flex items-center gap-1.5 hover:text-[#141413] transition-colors group cursor-pointer"

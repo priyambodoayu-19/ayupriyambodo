@@ -1,0 +1,58 @@
+{
+  "author": "Ayu Priyambodo",
+  "title": "Ayu Priyambodo — Creative Director & Brand Identity Designer",
+  "role": "Brand Identity Designer & Creative Director",
+  "shortBio": "Zero-to-one brand identity, manufacturing-ready packaging & print production, commercial art direction, and executive editorial systems.",
+  "location": "Jakarta, Indonesia / Remote Worldwide",
+  "email": "hello@ayupriyambodo.com",
+  "availableForProjects": true,
+  "availabilityText": "Available for Select Projects",
+  "socials": [
+    { "name": "LinkedIn", "url": "https://linkedin.com/in/ayupriyambodo" },
+    { "name": "Behance", "url": "https://behance.net/ayupriyambodo" },
+    { "name": "Instagram", "url": "https://instagram.com/ayupriyambodo" },
+    { "name": "Savee / Readymag", "url": "https://savee.it" }
+  ],
+  "capabilities": [
+    {
+      "category": "Brand Systems & Identity",
+      "skills": [
+        "Zero-to-One Brand Worlds",
+        "Visual Identity Guidelines",
+        "Typography & Color Hierarchies",
+        "Label Architecture & Shelf Cohesion",
+        "Custom Wordmarks & Iconography"
+      ]
+    },
+    {
+      "category": "Packaging & Technical Pre-Press",
+      "skills": [
+        "2D Precision Dielines",
+        "Pre-Press & CMYK / Spot Pantone Profiling",
+        "Foil Stamping, Embossing & Debossing Specs",
+        "Substrate Curation (Kraft, SBS, Frosted Glass)",
+        "Factory-Floor Manufacturing QC"
+      ]
+    },
+    {
+      "category": "Art Direction & Motion",
+      "skills": [
+        "Campaign Visual Manifestos",
+        "Lighting & Color Grading Direction",
+        "Set & Prop Styling Direction",
+        "Storyboard to Commercial Launch Video",
+        "E-Commerce & High-Impact Stills"
+      ]
+    },
+    {
+      "category": "Editorial & Corporate Systems",
+      "skills": [
+        "Bilingual Editorial Grids (EN / ID)",
+        "Executive B2B Storytelling",
+        "Annual Reports & Company Profiles",
+        "Complex Catalog Layouts",
+        "Data Visualization & Information Architecture"
+      ]
+    }
+  ]
+}

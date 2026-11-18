@@ -1,3 +1,53 @@
+export interface VideoData {
+  url: string;
+  poster?: string;
+  caption?: string;
+  provider?: "direct" | "vimeo" | "youtube";
+  aspectRatio?: string;
+}
+
+export interface MetricItem {
+  label: string;
+  value: string;
+}
+
+export interface ProjectSection {
+  id: string;
+  title: string;
+  kicker?: string;
+  description: string;
+  type: "gallery" | "dieline" | "comparison" | "editorial" | "quote" | "video";
+  items?: {
+    caption: string;
+    subcaption?: string;
+    image?: string;
+    tag?: string;
+    aspect?: string;
+  }[];
+  comparisonData?: {
+    beforeLabel: string;
+    afterLabel: string;
+    beforeImage: string;
+    afterImage: string;
+    beforeDescription: string;
+    afterDescription: string;
+  };
+  dielineData?: {
+    substrate: string;
+    dimensions: string;
+    bleed: string;
+    creaseGuide: string;
+    finishes: string[];
+    colorSeparation: string[];
+  };
+  videoData?: VideoData;
+  quoteData?: {
+    quote: string;
+    author: string;
+    role: string;
+  };
+}
+
 export interface ProjectItem {
   id: string;
   slug: string;
@@ -14,7 +64,8 @@ export interface ProjectItem {
   coverImage: string;
   aspectRatio?: string;
   tags: string[];
-  metrics?: { label: string; value: string }[];
+  metrics?: MetricItem[];
+  videoData?: VideoData;
   overview: {
     challenge: string;
     strategicSolution: string;
@@ -24,44 +75,23 @@ export interface ProjectItem {
   specs?: {
     [key: string]: string;
   };
-  sections: {
-    id: string;
-    title: string;
-    kicker?: string;
-    description: string;
-    type: 'gallery' | 'dieline' | 'comparison' | 'editorial' | 'quote';
-    items?: {
-      caption: string;
-      subcaption?: string;
-      image?: string;
-      tag?: string;
-      aspect?: string;
-    }[];
-    comparisonData?: {
-      beforeLabel: string;
-      afterLabel: string;
-      beforeImage: string;
-      afterImage: string;
-      beforeDescription: string;
-      afterDescription: string;
-    };
-    dielineData?: {
-      substrate: string;
-      dimensions: string;
-      bleed: string;
-      creaseGuide: string;
-      finishes: string[];
-      colorSeparation: string[];
-    };
-    quoteData?: {
-      quote: string;
-      author: string;
-      role: string;
-    };
-  }[];
+  sections: ProjectSection[];
 }
 
-export const SITE_METADATA = {
+export interface SiteMetadata {
+  author: string;
+  title: string;
+  role: string;
+  shortBio: string;
+  location: string;
+  email: string;
+  availableForProjects: boolean;
+  availabilityText: string;
+  socials: { name: string; url: string }[];
+  capabilities: { category: string; skills: string[] }[];
+}
+
+export const DEFAULT_SITE_METADATA: SiteMetadata = {
   author: "Ayu Priyambodo",
   title: "Ayu Priyambodo — Creative Director & Brand Identity Designer",
   role: "Brand Identity Designer & Creative Director",
@@ -69,6 +99,8 @@ export const SITE_METADATA = {
     "Zero-to-one brand identity, manufacturing-ready packaging & print production, commercial art direction, and executive editorial systems.",
   location: "Jakarta, Indonesia / Remote Worldwide",
   email: "hello@ayupriyambodo.com",
+  availableForProjects: true,
+  availabilityText: "Available for Select Projects",
   socials: [
     { name: "LinkedIn", url: "https://linkedin.com/in/ayupriyambodo" },
     { name: "Behance", url: "https://behance.net/ayupriyambodo" },
@@ -119,7 +151,7 @@ export const SITE_METADATA = {
   ]
 };
 
-export const PROJECTS: ProjectItem[] = [
+export const DEFAULT_PROJECTS: ProjectItem[] = [
   {
     id: "pillar-1",
     slug: "nidhi",
@@ -318,6 +350,13 @@ export const PROJECTS: ProjectItem[] = [
       { label: "Still Photography", value: "18 Editorial Key Visuals" },
       { label: "Campaign Reach", value: "Global Digital & Retail Display" }
     ],
+    videoData: {
+      url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      poster: "/placeholder-campaign-hero.svg",
+      caption: "Commercial Launch Film (30s Director's Cut) — Botanical Equilibrium & Mineral Restraint",
+      provider: "direct",
+      aspectRatio: "16/9"
+    },
     overview: {
       challenge:
         "Translating an elusive brand ethos ('botanical equilibrium and raw mineral restraint') into concrete film direction that crew, lighting gaffers, set decorators, and videographers can execute flawlessly without ambiguity.",
@@ -328,6 +367,7 @@ export const PROJECTS: ProjectItem[] = [
     },
     deliverables: [
       "Comprehensive Director's Treatment & Moodboard",
+      "Commercial Launch Film (30s Master + Social Edits)",
       "Lighting & Texture Blueprint (Light Ratios, Gels, Diffusion)",
       "Set Architecture, Prop Sourcing & Plinth Fabrication",
       "Shot List, Storyboard & Timing Metronome",
@@ -468,3 +508,12 @@ export const PROJECTS: ProjectItem[] = [
     ]
   }
 ];
+
+import siteJson from "@/content/site.json";
+import projectsJson from "@/content/projects.json";
+
+export const SITE_METADATA: SiteMetadata =
+  (siteJson as unknown as SiteMetadata) || DEFAULT_SITE_METADATA;
+
+export const PROJECTS: ProjectItem[] =
+  (projectsJson as unknown as ProjectItem[]) || DEFAULT_PROJECTS;
