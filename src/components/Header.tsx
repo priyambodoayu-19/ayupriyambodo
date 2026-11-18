@@ -10,11 +10,11 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { label: "Work", href: "/#work" },
-    { label: "Pillars", href: "/#pillars" },
-    { label: "About", href: "/about" },
-    { label: "Contact", href: "/#contact" },
+  const navLinks = SITE_METADATA.navLinks || [
+    { id: "work", label: "Work", href: "/#work" },
+    { id: "pillars", label: "Pillars", href: "/#pillars" },
+    { id: "about", label: "About", href: "/about" },
+    { id: "contact", label: "Contact", href: "/#contact" },
   ];
 
   return (
@@ -29,19 +29,21 @@ export default function Header() {
             {SITE_METADATA.author}
           </span>
           <span className="text-[11px] uppercase tracking-widest text-[#8A8881] font-medium">
-            Creative Direction & Brand Identity
+            Creative Direction &amp; Brand Identity
           </span>
         </Link>
 
         {/* Availability Badge & Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAE7DF]/70 text-[12px] text-[#64625C] border border-[#DDD9CE]">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
-            </span>
-            <span>Available for Select Projects</span>
-          </div>
+          {SITE_METADATA.availableForProjects !== false && (
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAE7DF]/70 text-[12px] text-[#64625C] border border-[#DDD9CE]">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+              </span>
+              <span>{SITE_METADATA.availabilityText || "Available for Select Projects"}</span>
+            </div>
+          )}
 
           <nav className="flex items-center gap-7 text-sm font-medium tracking-wide text-[#4A4843]">
             {navLinks.map((link) => {
@@ -83,12 +85,14 @@ export default function Header() {
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#FAF9F5] border-b border-[#E5E2DA] px-6 py-6 space-y-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EAE7DF] text-[12px] text-[#64625C] border border-[#DDD9CE] w-fit">
-            <span className="relative flex h-2 w-2">
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
-            </span>
-            <span>Available for Select Projects</span>
-          </div>
+          {SITE_METADATA.availableForProjects !== false && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EAE7DF] text-[12px] text-[#64625C] border border-[#DDD9CE] w-fit">
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+              </span>
+              <span>{SITE_METADATA.availabilityText || "Available for Select Projects"}</span>
+            </div>
+          )}
 
           <nav className="flex flex-col space-y-3 pt-2">
             {navLinks.map((link) => (

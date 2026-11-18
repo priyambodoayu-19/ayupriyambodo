@@ -7,6 +7,12 @@
   "email": "hello@ayupriyambodo.com",
   "availableForProjects": true,
   "availabilityText": "Available for Select Projects",
+  "navLinks": [
+    { "id": "work", "label": "Work", "href": "/#work" },
+    { "id": "pillars", "label": "Pillars", "href": "/#pillars" },
+    { "id": "about", "label": "About", "href": "/about" },
+    { "id": "contact", "label": "Contact", "href": "/#contact" }
+  ],
   "hero": {
     "badge": "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO",
     "headlinePrefix": "Translating zero-to-one concepts into",

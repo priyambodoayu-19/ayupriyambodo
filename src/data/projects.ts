@@ -78,6 +78,12 @@ export interface ProjectItem {
   sections: ProjectSection[];
 }
 
+export interface NavLinkItem {
+  id: string;
+  label: string;
+  href: string;
+}
+
 export interface HeroData {
   badge: string;
   headlinePrefix: string;
@@ -99,6 +105,7 @@ export interface SiteMetadata {
   email: string;
   availableForProjects: boolean;
   availabilityText: string;
+  navLinks: NavLinkItem[];
   hero: HeroData;
   socials: { name: string; url: string }[];
   capabilities: { category: string; skills: string[] }[];
@@ -114,6 +121,12 @@ export const DEFAULT_SITE_METADATA: SiteMetadata = {
   email: "hello@ayupriyambodo.com",
   availableForProjects: true,
   availabilityText: "Available for Select Projects",
+  navLinks: [
+    { id: "work", label: "Work", href: "/#work" },
+    { id: "pillars", label: "Pillars", href: "/#pillars" },
+    { id: "about", label: "About", href: "/about" },
+    { id: "contact", label: "Contact", href: "/#contact" },
+  ],
   hero: {
     badge: "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO",
     headlinePrefix: "Translating zero-to-one concepts into",

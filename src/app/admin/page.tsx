@@ -15,6 +15,9 @@ import {
   FileText,
   User,
   Layout,
+  Compass,
+  ArrowUp,
+  ArrowDown,
   Plus,
   Trash2,
   AlertCircle
@@ -156,6 +159,59 @@ export default function AdminDashboardPage() {
     });
   };
 
+  const addNavLink = (label: string = "New Page", href: string = "/#") => {
+    if (!site) return;
+    const currentLinks = site.navLinks || [
+      { id: "work", label: "Work", href: "/#work" },
+      { id: "pillars", label: "Pillars", href: "/#pillars" },
+      { id: "about", label: "About", href: "/about" },
+      { id: "contact", label: "Contact", href: "/#contact" },
+    ];
+    const newLink = {
+      id: `nav-${Date.now()}`,
+      label,
+      href,
+    };
+    setSite({
+      ...site,
+      navLinks: [...currentLinks, newLink],
+    });
+  };
+
+  const removeNavLink = (id: string) => {
+    if (!site) return;
+    const currentLinks = site.navLinks || [];
+    setSite({
+      ...site,
+      navLinks: currentLinks.filter((item) => item.id !== id),
+    });
+  };
+
+  const updateNavLink = (id: string, field: "label" | "href", value: string) => {
+    if (!site) return;
+    const currentLinks = site.navLinks || [];
+    setSite({
+      ...site,
+      navLinks: currentLinks.map((item) => {
+        if (item.id === id) {
+          return { ...item, [field]: value };
+        }
+        return item;
+      }),
+    });
+  };
+
+  const moveNavLink = (index: number, direction: "up" | "down") => {
+    if (!site) return;
+    const currentLinks = [...(site.navLinks || [])];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentLinks.length) return;
+    const temp = currentLinks[index];
+    currentLinks[index] = currentLinks[targetIndex];
+    currentLinks[targetIndex] = temp;
+    setSite({ ...site, navLinks: currentLinks });
+  };
+
   if (isLoading || !site) {
     return (
       <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center text-xs font-mono text-[#8A8881]">
@@ -233,6 +289,18 @@ export default function AdminDashboardPage() {
           >
             <Layout className="w-4 h-4 shrink-0" />
             <span>Homepage Hero</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("navigation")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
+              activeTab === "navigation"
+                ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
+                : "text-[#5A5852] hover:bg-[#F0EEE8]"
+            }`}
+          >
+            <Compass className="w-4 h-4 shrink-0" />
+            <span>Navbar &amp; Page Tabs</span>
           </button>
 
           <button
@@ -453,6 +521,167 @@ export default function AdminDashboardPage() {
                       placeholder="Link (e.g. /about)"
                       className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
                     />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "navigation" && (
+            <div className="space-y-8">
+              <div className="border-b border-[#E5E2DA] pb-6 space-y-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
+                  Header &amp; Navigation Settings
+                </span>
+                <h2 className="font-editorial text-3xl text-[#141413]">
+                  Navbar Page Tabs
+                </h2>
+                <p className="text-xs text-[#64625C] pt-1">
+                  Add, remove, rename, or reorder the page links that appear in your header navbar and mobile menu.
+                </p>
+              </div>
+
+              {/* Real-time Header Navbar Visual Preview */}
+              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3 shadow-xs">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                  Navbar Real-time Preview
+                </span>
+
+                <div className="p-4 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] flex items-center justify-between overflow-x-auto gap-4">
+                  <div className="flex flex-col shrink-0">
+                    <span className="font-editorial text-base text-[#141413]">
+                      {site.author}
+                    </span>
+                    <span className="text-[9px] uppercase tracking-widest text-[#8A8881]">
+                      Creative Direction
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-5 shrink-0">
+                    {(site.navLinks || []).map((link) => (
+                      <span
+                        key={link.id}
+                        className="text-xs font-medium text-[#4A4843] hover:text-black cursor-default border-b border-transparent"
+                      >
+                        {link.label}
+                      </span>
+                    ))}
+
+                    <span className="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] uppercase font-semibold rounded-full bg-[#141413] text-[#FAF9F5]">
+                      <span>Get in Touch</span>
+                      <ArrowUpRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation Links List */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                    Active Navbar Tabs ({(site.navLinks || []).length})
+                  </h4>
+                  <button
+                    onClick={() => addNavLink("New Page", "/#")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Page Tab</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(site.navLinks || []).map((link, index) => (
+                    <div
+                      key={link.id}
+                      className="p-4 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[#D5D1C7]"
+                    >
+                      {/* Reorder Controls & Index */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-0.5">
+                          <button
+                            onClick={() => moveNavLink(index, "up")}
+                            disabled={index === 0}
+                            className="p-1 rounded text-[#8A8881] hover:text-[#141413] hover:bg-[#EAE7DF] disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                            title="Move Up"
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => moveNavLink(index, "down")}
+                            disabled={index === (site.navLinks || []).length - 1}
+                            className="p-1 rounded text-[#8A8881] hover:text-[#141413] hover:bg-[#EAE7DF] disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                            title="Move Down"
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <span className="font-mono text-xs font-bold text-[#8A8881] w-6">
+                          0{index + 1}
+                        </span>
+                      </div>
+
+                      {/* Inputs: Label & Path */}
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
+                            Tab Title / Label
+                          </label>
+                          <input
+                            type="text"
+                            value={link.label}
+                            onChange={(e) => updateNavLink(link.id, "label", e.target.value)}
+                            placeholder="e.g. Work"
+                            className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-medium text-[#141413]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
+                            Link / Destination Path
+                          </label>
+                          <input
+                            type="text"
+                            value={link.href}
+                            onChange={(e) => updateNavLink(link.id, "href", e.target.value)}
+                            placeholder="e.g. /#work or /about"
+                            className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => removeNavLink(link.id)}
+                        className="p-2.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors self-end sm:self-center cursor-pointer"
+                        title="Remove Tab"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Preset Buttons */}
+                <div className="pt-4 border-t border-[#E5E2DA] space-y-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                    Quick Preset Tabs
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Services", href: "/#services" },
+                      { label: "Press", href: "/press" },
+                      { label: "Resume", href: "/about#resume" },
+                      { label: "Catalog", href: "/#catalog" },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        onClick={() => addNavLink(preset.label, preset.href)}
+                        className="px-3 py-1.5 rounded-full text-xs font-mono border border-[#DDD9CE] bg-[#FAF9F5] text-[#5A5852] hover:bg-[#EAE7DF] hover:text-[#141413] transition-colors cursor-pointer"
+                      >
+                        + Add &ldquo;{preset.label}&rdquo;
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
