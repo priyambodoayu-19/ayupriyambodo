@@ -27,8 +27,11 @@ import {
   Eye,
   CheckCircle2,
   FileBox,
+  Image as ImageIcon,
+  Tag,
+  SlidersHorizontal,
 } from "lucide-react";
-import { ProjectItem, SiteMetadata, ToolchainItem } from "@/data/projects";
+import { ProjectItem, ProjectSection, SiteMetadata, ToolchainItem } from "@/data/projects";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -262,7 +265,7 @@ export default function AdminDashboardPage() {
   };
 
   // ==========================================
-  // PROJECT HELPERS
+  // PROJECT HELPERS (METADATA, VIDEO, METRICS)
   // ==========================================
 
   const updateProjectField = (slug: string, field: string, value: any) => {
@@ -307,6 +310,323 @@ export default function AdminDashboardPage() {
     );
   };
 
+  // Key Impact Metrics Helpers
+  const updateProjectMetric = (slug: string, index: number, field: "label" | "value", val: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const metrics = [...(p.metrics || [])];
+          if (metrics[index]) {
+            metrics[index] = { ...metrics[index], [field]: val };
+          }
+          return { ...p, metrics };
+        }
+        return p;
+      })
+    );
+  };
+
+  const addProjectMetric = (slug: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const metrics = [...(p.metrics || []), { label: "New Metric", value: "Metric Value" }];
+          return { ...p, metrics };
+        }
+        return p;
+      })
+    );
+  };
+
+  const removeProjectMetric = (slug: string, index: number) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const metrics = (p.metrics || []).filter((_, i) => i !== index);
+          return { ...p, metrics };
+        }
+        return p;
+      })
+    );
+  };
+
+  // Deliverables Helpers (Scope of Work / Delivered Outputs)
+  const updateProjectDeliverable = (slug: string, index: number, val: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const deliverables = [...(p.deliverables || [])];
+          deliverables[index] = val;
+          return { ...p, deliverables };
+        }
+        return p;
+      })
+    );
+  };
+
+  const addProjectDeliverable = (slug: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const deliverables = [...(p.deliverables || []), "New Deliverable Output"];
+          return { ...p, deliverables };
+        }
+        return p;
+      })
+    );
+  };
+
+  const removeProjectDeliverable = (slug: string, index: number) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const deliverables = (p.deliverables || []).filter((_, i) => i !== index);
+          return { ...p, deliverables };
+        }
+        return p;
+      })
+    );
+  };
+
+  // Technical Standards / Specs Helpers
+  const updateProjectSpecKey = (slug: string, oldKey: string, newKey: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug && p.specs) {
+          const newSpecs: Record<string, string> = {};
+          for (const [k, v] of Object.entries(p.specs)) {
+            if (k === oldKey) {
+              newSpecs[newKey] = v;
+            } else {
+              newSpecs[k] = v;
+            }
+          }
+          return { ...p, specs: newSpecs };
+        }
+        return p;
+      })
+    );
+  };
+
+  const updateProjectSpecValue = (slug: string, key: string, value: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          return {
+            ...p,
+            specs: { ...(p.specs || {}), [key]: value },
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  const addProjectSpec = (slug: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const existingSpecs = p.specs || {};
+          const newKey = `Specification ${Object.keys(existingSpecs).length + 1}`;
+          return {
+            ...p,
+            specs: { ...existingSpecs, [newKey]: "Details & specifications" },
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  const removeProjectSpec = (slug: string, key: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug && p.specs) {
+          const newSpecs = { ...p.specs };
+          delete newSpecs[key];
+          return { ...p, specs: newSpecs };
+        }
+        return p;
+      })
+    );
+  };
+
+  // ==========================================
+  // SECTIONS & GALLERY ITEMS HELPERS
+  // ==========================================
+
+  const updateSectionField = (slug: string, secIdx: number, field: string, val: any) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            sections[secIdx] = { ...sections[secIdx], [field]: val };
+          }
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const addSection = (slug: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const newSec: ProjectSection = {
+            id: `sec-${Date.now()}`,
+            title: "New Architectural Section",
+            kicker: "System Foundations",
+            description: "Detailed description of this section's rationale and design execution.",
+            type: "gallery",
+            items: [
+              {
+                caption: "First Visual Component",
+                subcaption: "Technical explanation or design rationale.",
+                aspect: "4/3",
+              },
+            ],
+          };
+          return { ...p, sections: [...(p.sections || []), newSec] };
+        }
+        return p;
+      })
+    );
+  };
+
+  const removeSection = (slug: string, secIdx: number) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = (p.sections || []).filter((_, i) => i !== secIdx);
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const updateSectionItem = (
+    slug: string,
+    secIdx: number,
+    itemIdx: number,
+    field: "caption" | "subcaption" | "image" | "aspect",
+    val: string
+  ) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            const items = [...(sections[secIdx].items || [])];
+            if (items[itemIdx]) {
+              items[itemIdx] = { ...items[itemIdx], [field]: val };
+              sections[secIdx] = { ...sections[secIdx], items };
+            }
+          }
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const addSectionItem = (slug: string, secIdx: number) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            const items = [
+              ...(sections[secIdx].items || []),
+              {
+                caption: "New Visual Component Card",
+                subcaption: "Descriptive rationale and specification.",
+                aspect: "4/3",
+              },
+            ];
+            sections[secIdx] = { ...sections[secIdx], items };
+          }
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const removeSectionItem = (slug: string, secIdx: number, itemIdx: number) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            const items = (sections[secIdx].items || []).filter((_, i) => i !== itemIdx);
+            sections[secIdx] = { ...sections[secIdx], items };
+          }
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const updateSectionDieline = (slug: string, secIdx: number, field: string, val: any) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            sections[secIdx] = {
+              ...sections[secIdx],
+              dielineData: {
+                ...(sections[secIdx].dielineData || {
+                  substrate: "",
+                  dimensions: "",
+                  bleed: "",
+                  creaseGuide: "",
+                  finishes: [],
+                  colorSeparation: [],
+                }),
+                [field]: val,
+              },
+            };
+          }
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const updateSectionComparison = (slug: string, secIdx: number, field: string, val: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            sections[secIdx] = {
+              ...sections[secIdx],
+              comparisonData: {
+                ...(sections[secIdx].comparisonData || {
+                  beforeLabel: "",
+                  afterLabel: "",
+                  beforeImage: "",
+                  afterImage: "",
+                  beforeDescription: "",
+                  afterDescription: "",
+                }),
+                [field]: val,
+              },
+            };
+          }
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
   const addNewProject = () => {
     const newSlug = `new-case-study-${Date.now().toString().slice(-4)}`;
     const newPillarNumber = String(projects.length + 1).padStart(2, "0");
@@ -325,13 +645,36 @@ export default function AdminDashboardPage() {
       summary: "Executive case study summary outlining strategic context and results.",
       coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=85",
       tags: ["Brand Identity", "Packaging", "Art Direction"],
-      deliverables: ["Visual Identity System", "Label Architecture", "Manufacturing Specs"],
+      deliverables: [
+        "Full Zero-to-One Visual Identity",
+        "Custom Wordmark & Monogram Seal",
+        "Packaging Design System",
+      ],
+      specs: {
+        "Primary Typography": "Bespoke High-Contrast Serif + Suisse Int'l Grotesk",
+        "Color Palette": "Raw Obsidian (#141413), Warm Alabaster (#FAF9F5)",
+      },
       overview: {
         challenge: "Describe the foundational challenge and brand dilemma.",
         strategicSolution: "Detail the strategic concept, aesthetic discipline, and solution executed.",
         outcome: "Highlight the market reception, shelf presence, or executive results.",
       },
-      sections: [],
+      sections: [
+        {
+          id: `sec-${Date.now()}-1`,
+          title: "System Foundations & Visual Architecture",
+          kicker: "System Foundations",
+          description: "The identity is built upon an unyielding mathematical grid and custom type systems.",
+          type: "gallery",
+          items: [
+            {
+              caption: "Logotype Anatomy & Kerning Matrix",
+              subcaption: "Drawn with bespoke ligature transitions echoing brand geometry.",
+              aspect: "4/3",
+            },
+          ],
+        },
+      ],
     };
 
     setProjects([...projects, newProject]);
@@ -1141,11 +1484,11 @@ export default function AdminDashboardPage() {
           )}
 
           {/* ========================================================= */}
-          {/* 4. CASE STUDY DETAIL PAGE EDITOR (E.G. PILLAR 01-04) */}
+          {/* 4. CASE STUDY DETAIL PAGE EDITOR (COMPLETE WITH SPECS, DELIVERABLES, SECTIONS) */}
           {/* ========================================================= */}
           {selectedProject && (
-            <div className="space-y-8">
-              {/* Project Header */}
+            <div className="space-y-10">
+              {/* Project Header Bar */}
               <div className="border-b border-[#E5E2DA] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs font-mono text-[#8A8881]">
@@ -1183,7 +1526,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* COMMERCIAL VIDEO RESULT SHOWCASE (FOR PILLAR 3 & ANY VIDEO CASE STUDY) */}
+              {/* COMMERCIAL VIDEO RESULT SHOWCASE */}
               <div className="p-6 sm:p-8 rounded-2xl bg-[#141413] text-[#FAF9F5] space-y-6 shadow-md">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -1257,198 +1600,782 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Title, Subtitle, and Metadata */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Case Study Title
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedProject.title}
-                    onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "title", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
+              {/* SECTION A: Title, Subtitle, and Metadata */}
+              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
+                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                  1. Core Metadata &amp; Cover
+                </h4>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    URL Slug (Route Path)
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedProject.slug}
-                    onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "slug", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Pillar Number (e.g. 01, 02, 03, 04)
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedProject.pillarNumber}
-                    onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "pillarNumber", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Pillar Category Title
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedProject.pillarTitle}
-                    onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "pillarTitle", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Client / Partner
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedProject.client}
-                    onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "client", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Year &amp; Role
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      Case Study Title
+                    </label>
                     <input
                       type="text"
-                      value={selectedProject.year}
+                      value={selectedProject.title}
                       onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "year", e.target.value)
+                        updateProjectField(selectedProject.slug, "title", e.target.value)
                       }
-                      placeholder="Year"
-                      className="w-full px-3 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
                     />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      URL Slug (Route Path)
+                    </label>
                     <input
                       type="text"
-                      value={selectedProject.role}
+                      value={selectedProject.slug}
                       onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "role", e.target.value)
+                        updateProjectField(selectedProject.slug, "slug", e.target.value)
                       }
-                      placeholder="Role"
-                      className="w-full px-3 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      Pillar Number (e.g. 01, 02, 03, 04)
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedProject.pillarNumber}
+                      onChange={(e) =>
+                        updateProjectField(selectedProject.slug, "pillarNumber", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      Pillar Category Title
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedProject.pillarTitle}
+                      onChange={(e) =>
+                        updateProjectField(selectedProject.slug, "pillarTitle", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      Client / Partner
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedProject.client}
+                      onChange={(e) =>
+                        updateProjectField(selectedProject.slug, "client", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      Year &amp; Role
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={selectedProject.year}
+                        onChange={(e) =>
+                          updateProjectField(selectedProject.slug, "year", e.target.value)
+                        }
+                        placeholder="Year"
+                        className="w-full px-3 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
+                      />
+                      <input
+                        type="text"
+                        value={selectedProject.role}
+                        onChange={(e) =>
+                          updateProjectField(selectedProject.slug, "role", e.target.value)
+                        }
+                        placeholder="Role"
+                        className="w-full px-3 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      Subtitle / Value Proposition
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedProject.subtitle}
+                      onChange={(e) =>
+                        updateProjectField(selectedProject.slug, "subtitle", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
+                      Cover Image URL / Path
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedProject.coverImage}
+                      onChange={(e) =>
+                        updateProjectField(selectedProject.slug, "coverImage", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2 sm:col-span-2">
+                <div className="space-y-1 pt-2">
                   <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Subtitle / Value Proposition
+                    Executive Summary Paragraph
                   </label>
-                  <input
-                    type="text"
-                    value={selectedProject.subtitle}
+                  <textarea
+                    rows={3}
+                    value={selectedProject.summary}
                     onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "subtitle", e.target.value)
+                      updateProjectField(selectedProject.slug, "summary", e.target.value)
                     }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2 sm:col-span-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Cover Image URL / Path
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedProject.coverImage}
-                    onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "coverImage", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413] leading-relaxed"
                   />
                 </div>
               </div>
 
-              {/* Summary */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                  Executive Summary
-                </label>
-                <textarea
-                  rows={3}
-                  value={selectedProject.summary}
-                  onChange={(e) =>
-                    updateProjectField(selectedProject.slug, "summary", e.target.value)
-                  }
-                  className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413] leading-relaxed"
-                />
+              {/* SECTION B: KEY METRICS CARDS */}
+              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                      2. Key Metrics &amp; Impact Cards
+                    </h4>
+                    <p className="text-xs text-[#64625C]">
+                      Displayed as bold impact cards directly under the metadata bar.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => addProjectMetric(selectedProject.slug)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Metric</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  {(selectedProject.metrics || []).map((metric, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] space-y-2 relative group"
+                    >
+                      <button
+                        onClick={() => removeProjectMetric(selectedProject.slug, idx)}
+                        className="absolute top-2 right-2 p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                        title="Delete Metric"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                          Metric Label
+                        </label>
+                        <input
+                          type="text"
+                          value={metric.label}
+                          onChange={(e) =>
+                            updateProjectMetric(selectedProject.slug, idx, "label", e.target.value)
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#8A8881]"
+                          placeholder="e.g. Core SKUs Launched"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                          Metric Value
+                        </label>
+                        <input
+                          type="text"
+                          value={metric.value}
+                          onChange={(e) =>
+                            updateProjectMetric(selectedProject.slug, idx, "value", e.target.value)
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-editorial text-[#141413] font-bold"
+                          placeholder="e.g. 5 Formulations"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Strategic Overview Fields */}
-              <div className="space-y-4 pt-4 border-t border-[#E5E2DA]">
-                <h3 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                  Case Study Narrative
-                </h3>
+              {/* SECTION C: Strategic Overview (Challenge, Solution, Outcome) */}
+              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
+                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                  3. Case Study Narrative (Context &amp; Strategy)
+                </h4>
 
-                <div className="space-y-2">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                    The Challenge
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={selectedProject.overview.challenge}
-                    onChange={(e) =>
-                      updateProjectOverview(selectedProject.slug, "challenge", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
-                  />
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
+                      The Challenge
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={selectedProject.overview.challenge}
+                      onChange={(e) =>
+                        updateProjectOverview(selectedProject.slug, "challenge", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
+                      The Strategic Solution
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={selectedProject.overview.strategicSolution}
+                      onChange={(e) =>
+                        updateProjectOverview(
+                          selectedProject.slug,
+                          "strategicSolution",
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
+                      The Outcome
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={selectedProject.overview.outcome}
+                      onChange={(e) =>
+                        updateProjectOverview(selectedProject.slug, "outcome", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION D: SCOPE OF WORK / DELIVERED OUTPUTS (SCREENSHOT 1) */}
+              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Scope of Work
+                    </span>
+                    <h4 className="font-editorial text-2xl text-[#141413]">
+                      4. Delivered Outputs Checklist
+                    </h4>
+                    <p className="text-xs text-[#64625C] pt-0.5">
+                      The list of outputs shown with checkmarks on the live case study.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => addProjectDeliverable(selectedProject.slug)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Output</span>
+                  </button>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                    The Strategic Solution
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={selectedProject.overview.strategicSolution}
-                    onChange={(e) =>
-                      updateProjectOverview(
-                        selectedProject.slug,
-                        "strategicSolution",
-                        e.target.value
-                      )
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
-                  />
+                <div className="space-y-2.5 pt-2">
+                  {(selectedProject.deliverables || []).map((del, dIdx) => (
+                    <div
+                      key={dIdx}
+                      className="flex items-center gap-3 p-2.5 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] hover:border-[#C5C0B3] transition-colors"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 ml-1" />
+                      <input
+                        type="text"
+                        value={del}
+                        onChange={(e) =>
+                          updateProjectDeliverable(selectedProject.slug, dIdx, e.target.value)
+                        }
+                        placeholder="e.g. Full Zero-to-One Visual Identity"
+                        className="flex-1 px-2 py-1 text-xs font-medium text-[#141413] bg-transparent outline-none"
+                      />
+                      <button
+                        onClick={() => removeProjectDeliverable(selectedProject.slug, dIdx)}
+                        className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer shrink-0"
+                        title="Delete output"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION E: TECHNICAL STANDARDS / PRODUCTION & SYSTEM SPECS (SCREENSHOT 1) */}
+              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Technical Standards
+                    </span>
+                    <h4 className="font-editorial text-2xl text-[#141413]">
+                      5. Production &amp; System Specs
+                    </h4>
+                    <p className="text-xs text-[#64625C] pt-0.5">
+                      Key-value spec cards (Typography, Color Palette, Substrates, Secondary Packaging).
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => addProjectSpec(selectedProject.slug)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Spec</span>
+                  </button>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                    The Outcome
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={selectedProject.overview.outcome}
-                    onChange={(e) =>
-                      updateProjectOverview(selectedProject.slug, "outcome", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
-                  />
+                <div className="space-y-3 pt-2">
+                  {Object.entries(selectedProject.specs || {}).map(([key, val], sIdx) => (
+                    <div
+                      key={sIdx}
+                      className="p-4 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] space-y-2 relative"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex-1">
+                          <label className="text-[10px] font-mono uppercase text-[#8A8881] block mb-1">
+                            Spec Label / Category
+                          </label>
+                          <input
+                            type="text"
+                            value={key}
+                            onChange={(e) =>
+                              updateProjectSpecKey(selectedProject.slug, key, e.target.value)
+                            }
+                            placeholder="e.g. PRIMARY TYPOGRAPHY"
+                            className="w-full px-3 py-1.5 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono font-bold uppercase text-[#8A8881]"
+                          />
+                        </div>
+                        <button
+                          onClick={() => removeProjectSpec(selectedProject.slug, key)}
+                          className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer self-end mb-0.5"
+                          title="Delete Spec"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono uppercase text-[#8A8881] block mb-1">
+                          Spec Content / Description
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={val}
+                          onChange={(e) =>
+                            updateProjectSpecValue(selectedProject.slug, key, e.target.value)
+                          }
+                          placeholder="e.g. Bespoke Editorial High-Contrast Serif + Suisse Int'l Grotesk"
+                          className="w-full px-3 py-2 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-xs sm:text-sm font-medium text-[#141413]"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION F: SECTIONS & GALLERY ARCHITECTURE (SCREENSHOTS 2 & 3) */}
+              <div className="p-6 sm:p-8 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Architectural Blocks
+                    </span>
+                    <h4 className="font-editorial text-2xl sm:text-3xl text-[#141413]">
+                      6. Content Sections &amp; Gallery Cards
+                    </h4>
+                    <p className="text-xs text-[#64625C] pt-0.5">
+                      Edit the section headings, descriptions, and each individual card caption &amp; subcaption (Logotype Anatomy, Shelf Lineup, etc.).
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => addSection(selectedProject.slug)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add New Section</span>
+                  </button>
+                </div>
+
+                <div className="space-y-8 pt-4">
+                  {(selectedProject.sections || []).map((sec, secIdx) => (
+                    <div
+                      key={sec.id || secIdx}
+                      className="p-6 rounded-2xl bg-[#F4F2EC] border border-[#DDD9CE] space-y-5 shadow-xs"
+                    >
+                      {/* Section Header */}
+                      <div className="flex items-center justify-between border-b border-[#DDD9CE] pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full font-mono text-[10px] bg-[#141413] text-[#FAF9F5]">
+                            Section 0{secIdx + 1}
+                          </span>
+                          <span className="font-mono text-xs uppercase text-[#8A8881]">
+                            Type: {sec.type}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => removeSection(selectedProject.slug, secIdx)}
+                          className="inline-flex items-center gap-1 text-xs font-mono text-rose-600 hover:text-rose-800 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove Section</span>
+                        </button>
+                      </div>
+
+                      {/* Section Kicker, Title, Description */}
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
+                              Section Kicker Badge (e.g. SYSTEM FOUNDATIONS / RETAIL IMPACT)
+                            </label>
+                            <input
+                              type="text"
+                              value={sec.kicker || ""}
+                              onChange={(e) =>
+                                updateSectionField(
+                                  selectedProject.slug,
+                                  secIdx,
+                                  "kicker",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="e.g. SYSTEM FOUNDATIONS"
+                              className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono uppercase text-[#141413]"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
+                              Section Title
+                            </label>
+                            <input
+                              type="text"
+                              value={sec.title}
+                              onChange={(e) =>
+                                updateSectionField(
+                                  selectedProject.slug,
+                                  secIdx,
+                                  "title",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="e.g. The Zero-to-One System Architecture"
+                              className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-editorial text-[#141413]"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
+                            Section Description Narrative
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={sec.description}
+                            onChange={(e) =>
+                              updateSectionField(
+                                selectedProject.slug,
+                                secIdx,
+                                "description",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Detailed description of this section..."
+                            className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs sm:text-sm text-[#141413] leading-relaxed"
+                          />
+                        </div>
+                      </div>
+
+                      {/* SECTION ITEMS (GALLERY CARDS - SCREENSHOTS 2 & 3) */}
+                      {(sec.type === "gallery" || sec.type === "editorial") && (
+                        <div className="space-y-3 pt-3 border-t border-[#DDD9CE]">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                              Visual Cards &amp; Captions ({(sec.items || []).length})
+                            </span>
+                            <button
+                              onClick={() => addSectionItem(selectedProject.slug, secIdx)}
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono bg-[#FAF9F5] border border-[#DDD9CE] hover:bg-[#EAE7DF] text-[#141413] cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Add Card</span>
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                            {(sec.items || []).map((item, itemIdx) => (
+                              <div
+                                key={itemIdx}
+                                className="p-4 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] space-y-3 relative shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-[10px] text-[#8A8881] font-bold">
+                                    Card 0{itemIdx + 1}
+                                  </span>
+                                  <button
+                                    onClick={() =>
+                                      removeSectionItem(selectedProject.slug, secIdx, itemIdx)
+                                    }
+                                    className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                                    title="Delete Card"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                    Card Caption / Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={item.caption}
+                                    onChange={(e) =>
+                                      updateSectionItem(
+                                        selectedProject.slug,
+                                        secIdx,
+                                        itemIdx,
+                                        "caption",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="e.g. Logotype Anatomy & Kerning Matrix"
+                                    className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-editorial font-bold text-[#141413]"
+                                  />
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                    Card Subcaption / Description
+                                  </label>
+                                  <textarea
+                                    rows={2}
+                                    value={item.subcaption || ""}
+                                    onChange={(e) =>
+                                      updateSectionItem(
+                                        selectedProject.slug,
+                                        secIdx,
+                                        itemIdx,
+                                        "subcaption",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="e.g. Drawn with bespoke ligature transitions..."
+                                    className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#5A5852] leading-relaxed"
+                                  />
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                    Custom Image URL (Optional, defaults to cover)
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={item.image || ""}
+                                    onChange={(e) =>
+                                      updateSectionItem(
+                                        selectedProject.slug,
+                                        secIdx,
+                                        itemIdx,
+                                        "image",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="/placeholder-nidhi-hero.svg"
+                                    className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-[11px] font-mono text-[#141413]"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* DIELINE SECTION PARAMETERS */}
+                      {sec.type === "dieline" && sec.dielineData && (
+                        <div className="space-y-3 pt-3 border-t border-[#DDD9CE]">
+                          <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413] block">
+                            Dieline Inspector Parameters
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                Substrate
+                              </label>
+                              <input
+                                type="text"
+                                value={sec.dielineData.substrate}
+                                onChange={(e) =>
+                                  updateSectionDieline(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "substrate",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                Dimensions
+                              </label>
+                              <input
+                                type="text"
+                                value={sec.dielineData.dimensions}
+                                onChange={(e) =>
+                                  updateSectionDieline(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "dimensions",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                Bleed
+                              </label>
+                              <input
+                                type="text"
+                                value={sec.dielineData.bleed}
+                                onChange={(e) =>
+                                  updateSectionDieline(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "bleed",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                Crease Guide
+                              </label>
+                              <input
+                                type="text"
+                                value={sec.dielineData.creaseGuide}
+                                onChange={(e) =>
+                                  updateSectionDieline(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "creaseGuide",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* COMPARISON SECTION PARAMETERS */}
+                      {sec.type === "comparison" && sec.comparisonData && (
+                        <div className="space-y-3 pt-3 border-t border-[#DDD9CE]">
+                          <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413] block">
+                            Comparison Slider Labels &amp; Descriptions
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                Before Label
+                              </label>
+                              <input
+                                type="text"
+                                value={sec.comparisonData.beforeLabel}
+                                onChange={(e) =>
+                                  updateSectionComparison(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "beforeLabel",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                After Label
+                              </label>
+                              <input
+                                type="text"
+                                value={sec.comparisonData.afterLabel}
+                                onChange={(e) =>
+                                  updateSectionComparison(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "afterLabel",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                Before Description
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={sec.comparisonData.beforeDescription}
+                                onChange={(e) =>
+                                  updateSectionComparison(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "beforeDescription",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
+                                After Description
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={sec.comparisonData.afterDescription}
+                                onChange={(e) =>
+                                  updateSectionComparison(
+                                    selectedProject.slug,
+                                    secIdx,
+                                    "afterDescription",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

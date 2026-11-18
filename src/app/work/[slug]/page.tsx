@@ -310,7 +310,7 @@ export default async function CaseStudyPage({
                     >
                       <div className="relative aspect-16/9 w-full rounded-lg overflow-hidden border border-[#E5E2DA] bg-[#F2EFE9]">
                         <Image
-                          src={project.coverImage}
+                          src={item.image || project.coverImage}
                           alt={item.caption}
                           fill
                           className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-102 transition-all duration-500"
