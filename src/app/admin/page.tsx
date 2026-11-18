@@ -82,11 +82,7 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (res.ok) {
         setSaveSuccess(true);
-        setStatusMessage(
-          data.savedTarget === "github_and_disk"
-            ? "Saved and committed directly to GitHub! Vercel is updating."
-            : "Saved successfully to content store."
-        );
+        setStatusMessage("Saved & synced live to your website!");
         setTimeout(() => setSaveSuccess(false), 4000);
       } else {
         alert(data.error || "Failed to save");

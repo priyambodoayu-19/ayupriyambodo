@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUp, Copy, Check, ArrowUpRight } from "lucide-react";
-import { SITE_METADATA } from "@/data/projects";
+import { SITE_METADATA, SiteMetadata } from "@/data/projects";
 
-export default function Footer() {
+export default function Footer({ site }: { site?: SiteMetadata }) {
+  const currentSite = site || SITE_METADATA;
   const [copied, setCopied] = useState(false);
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText(SITE_METADATA.email);
+    navigator.clipboard.writeText(currentSite.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
   };
@@ -17,6 +18,8 @@ export default function Footer() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const socials = currentSite.socials || SITE_METADATA.socials;
 
   return (
     <footer id="contact" className="border-t border-[#E5E2DA] bg-[#F4F2EC] text-[#141413] mt-24">
@@ -43,14 +46,14 @@ export default function Footer() {
               </span>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <a
-                  href={`mailto:${SITE_METADATA.email}`}
+                  href={`mailto:${currentSite.email}`}
                   className="font-editorial text-2xl text-[#141413] hover:underline underline-offset-4"
                 >
-                  {SITE_METADATA.email}
+                  {currentSite.email}
                 </a>
                 <button
                   onClick={handleCopyEmail}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border border-[#D5D1C7] hover:bg-[#EAE7DF] transition-colors self-start sm:self-auto"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border border-[#D5D1C7] hover:bg-[#EAE7DF] transition-colors self-start sm:self-auto cursor-pointer"
                 >
                   {copied ? (
                     <>
@@ -68,7 +71,7 @@ export default function Footer() {
             </div>
 
             <div className="flex flex-wrap gap-4 pt-2">
-              {SITE_METADATA.socials.map((social) => (
+              {socials.map((social) => (
                 <a
                   key={social.name}
                   href={social.url}
@@ -88,7 +91,7 @@ export default function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-xs text-[#8A8881]">
           <div className="space-y-1">
             <p>© 2026 Ayu Priyambodo. All rights reserved.</p>
-            <p>Jakarta, Indonesia · Working Globally</p>
+            <p>{currentSite.location || "Jakarta, Indonesia · Working Globally"}</p>
           </div>
 
           <div className="flex items-center gap-6">

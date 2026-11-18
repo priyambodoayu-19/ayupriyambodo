@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, CheckCircle2, Download } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Download } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { SITE_METADATA } from "@/data/projects";
+import { getLiveSite } from "@/data/content-store";
 
 export const metadata = {
   title: "About & Philosophy — Ayu Priyambodo",
@@ -10,8 +10,9 @@ export const metadata = {
     "Background, design philosophy, and technical fluency of Ayu Priyambodo — Creative Director & Brand Identity Designer.",
 };
 
-export default function AboutPage() {
-  const about = SITE_METADATA.about;
+export default async function AboutPage() {
+  const site = await getLiveSite();
+  const about = site.about;
   const tools = about?.toolchain || [
     { name: "Adobe InDesign", role: "Long-form editorial, bilingual grid pagination, bookbinding" },
     { name: "Adobe Illustrator", role: "Vector dielines, logotype drawing, packaging geometry" },
@@ -23,7 +24,7 @@ export default function AboutPage() {
 
   return (
     <>
-      <Header />
+      <Header site={site} />
 
       <main className="flex-1">
         {/* TOP BREADCRUMB */}
@@ -60,7 +61,7 @@ export default function AboutPage() {
 
               <div className="pt-4 flex flex-wrap items-center gap-4">
                 <a
-                  href={`mailto:${SITE_METADATA.email}`}
+                  href={`mailto:${site.email}`}
                   className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5] hover:bg-[#2D2B27] transition-colors"
                 >
                   <span>{about?.contactButtonText || "Initiate a Conversation"}</span>
@@ -151,7 +152,7 @@ export default function AboutPage() {
         </section>
       </main>
 
-      <Footer />
+      <Footer site={site} />
     </>
   );
 }

@@ -15,14 +15,14 @@
   ],
   "hero": {
     "badge": "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO",
-    "headlinePrefix": "Translating zero-to-one concepts into",
-    "headlineItalic": "shelf-ready systems",
-    "headlineSuffix": ", commercial campaigns, & executive editorial.",
-    "subheadline": "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications.",
+    "headlinePrefix": "Creative Direction, Brand Identity & Visual Systems",
+    "headlineItalic": "Built for Modern Brands",
+    "headlineSuffix": ".",
+    "subheadline": "I am Ayu Priyambodo—a Jakarta-based Brand & Visual Designer crafting cohesive visual identities, tactile packaging, editorial retouching, and custom digital experiences.",
     "primaryButtonText": "Explore Featured Work",
     "primaryButtonLink": "#work",
-    "secondaryButtonText": "Read Profile & Approach",
-    "secondaryButtonLink": "/about"
+    "secondaryButtonText": "Start a Project",
+    "secondaryButtonLink": "#contact"
   },
   "workSection": {
     "kicker": "Core Curated Portfolio",

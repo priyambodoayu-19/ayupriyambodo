@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
 import path from "path";
-import { DEFAULT_PROJECTS, DEFAULT_SITE_METADATA, ProjectItem, SiteMetadata } from "@/data/projects";
+import { put } from "@vercel/blob";
+import { ProjectItem, SiteMetadata } from "@/data/projects";
+import { getLiveProjects, getLiveSite } from "@/data/content-store";
 
 const COOKIE_NAME = "ayu_admin_session";
 const CONTENT_DIR = path.join(process.cwd(), "src", "content");
@@ -17,22 +20,10 @@ async function checkAuth(): Promise<boolean> {
 
 export async function GET() {
   try {
-    let site: SiteMetadata = DEFAULT_SITE_METADATA;
-    let projects: ProjectItem[] = DEFAULT_PROJECTS;
-
-    try {
-      const siteRaw = await fs.readFile(SITE_FILE, "utf-8");
-      site = JSON.parse(siteRaw);
-    } catch {
-      // fallback to default
-    }
-
-    try {
-      const projectsRaw = await fs.readFile(PROJECTS_FILE, "utf-8");
-      projects = JSON.parse(projectsRaw);
-    } catch {
-      // fallback to default
-    }
+    const [site, projects] = await Promise.all([
+      getLiveSite(),
+      getLiveProjects(),
+    ]);
 
     return NextResponse.json({ site, projects });
   } catch (error) {
@@ -61,17 +52,33 @@ export async function POST(request: Request) {
     }
 
     let savedTarget = "local_disk";
+    const siteJson = JSON.stringify(site, null, 2);
+    const projectsJson = JSON.stringify(projects, null, 2);
 
-    // 1. Always attempt local file write (works in dev and serverful runtime)
+    // 1. Save directly to Vercel Blob (syncs live to CDN across the entire internet)
     try {
-      await fs.mkdir(CONTENT_DIR, { recursive: true });
-      await fs.writeFile(SITE_FILE, JSON.stringify(site, null, 2), "utf-8");
-      await fs.writeFile(PROJECTS_FILE, JSON.stringify(projects, null, 2), "utf-8");
-    } catch (fsErr) {
-      console.warn("Filesystem write warning:", fsErr);
+      await Promise.all([
+        put("site.json", siteJson, { access: "public", addRandomSuffix: false, allowOverwrite: true }),
+        put("projects.json", projectsJson, { access: "public", addRandomSuffix: false, allowOverwrite: true }),
+      ]);
+      savedTarget = "vercel_blob";
+    } catch (blobErr) {
+      console.warn("Vercel Blob write error:", blobErr);
     }
 
-    // 2. If GITHUB_TOKEN is available, commit to GitHub repository
+    // 2. Also save to local filesystem (works in dev and serverful runtime)
+    try {
+      await fs.mkdir(CONTENT_DIR, { recursive: true });
+      await fs.writeFile(SITE_FILE, siteJson, "utf-8");
+      await fs.writeFile(PROJECTS_FILE, projectsJson, "utf-8");
+      if (savedTarget === "vercel_blob") {
+        savedTarget = "vercel_blob_and_disk";
+      }
+    } catch {
+      // expected on read-only serverless
+    }
+
+    // 3. Optional: GitHub commit if GITHUB_TOKEN exists
     const githubToken = process.env.GITHUB_TOKEN;
     const githubRepo = process.env.GITHUB_REPO || "priyambodoayu-19/ayupriyambodo";
 
@@ -85,7 +92,6 @@ export async function POST(request: Request) {
             "User-Agent": "AyuPriyambodo-CMS",
           };
 
-          // Get current file sha
           const getRes = await fetch(url, { headers });
           let sha: string | undefined;
           if (getRes.ok) {
@@ -110,19 +116,27 @@ export async function POST(request: Request) {
 
         await updateGitHubFile(
           "src/content/site.json",
-          JSON.stringify(site, null, 2),
+          siteJson,
           "cms: update site profile and metadata"
         );
         await updateGitHubFile(
           "src/content/projects.json",
-          JSON.stringify(projects, null, 2),
+          projectsJson,
           "cms: update project pillars and video configuration"
         );
-
-        savedTarget = "github_and_disk";
+        savedTarget = `${savedTarget}_and_github`;
       } catch (ghErr) {
         console.error("GitHub API commit error:", ghErr);
       }
+    }
+
+    // 4. Instantly purge & revalidate Next.js cache for all live pages
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/about");
+      revalidatePath("/work/[slug]", "page");
+    } catch (revErr) {
+      console.warn("Revalidate path warning:", revErr);
     }
 
     return NextResponse.json({

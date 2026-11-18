@@ -7,13 +7,7 @@ import Footer from "@/components/Footer";
 import ComparisonSlider from "@/components/ComparisonSlider";
 import DielineInspector from "@/components/DielineInspector";
 import VideoPlayer from "@/components/VideoPlayer";
-import { PROJECTS } from "@/data/projects";
-
-export async function generateStaticParams() {
-  return PROJECTS.map((project) => ({
-    slug: project.slug,
-  }));
-}
+import { getLiveProjects, getLiveSite } from "@/data/content-store";
 
 export async function generateMetadata({
   params,
@@ -21,7 +15,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = PROJECTS.find((p) => p.slug === slug);
+  const projects = await getLiveProjects();
+  const project = projects.find((p) => p.slug === slug);
 
   if (!project) {
     return {
@@ -41,20 +36,25 @@ export default async function CaseStudyPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const projectIndex = PROJECTS.findIndex((p) => p.slug === slug);
+  const [site, projects] = await Promise.all([
+    getLiveSite(),
+    getLiveProjects(),
+  ]);
+
+  const projectIndex = projects.findIndex((p) => p.slug === slug);
 
   if (projectIndex === -1) {
     notFound();
   }
 
-  const project = PROJECTS[projectIndex];
-  const nextProject = PROJECTS[(projectIndex + 1) % PROJECTS.length];
+  const project = projects[projectIndex];
+  const nextProject = projects[(projectIndex + 1) % projects.length];
   const prevProject =
-    PROJECTS[(projectIndex - 1 + PROJECTS.length) % PROJECTS.length];
+    projects[(projectIndex - 1 + projects.length) % projects.length];
 
   return (
     <>
-      <Header />
+      <Header site={site} />
 
       <main className="flex-1">
         {/* TOP BREADCRUMB & BACK LINK */}
@@ -376,7 +376,7 @@ export default async function CaseStudyPage({
         </section>
       </main>
 
-      <Footer />
+      <Footer site={site} />
     </>
   );
 }

@@ -3,9 +3,14 @@ import { ArrowDown, ArrowUpRight, Sparkles, Box, Film, FileText, CheckCircle2 } 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProjectCard from "@/components/ProjectCard";
-import { PROJECTS, SITE_METADATA } from "@/data/projects";
+import { getLiveProjects, getLiveSite } from "@/data/content-store";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [site, projects] = await Promise.all([
+    getLiveSite(),
+    getLiveProjects(),
+  ]);
+
   const pillarIcons = [
     <Sparkles key="1" className="w-5 h-5 text-[#141413]" />,
     <Box key="2" className="w-5 h-5 text-[#141413]" />,
@@ -15,7 +20,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Header />
+      <Header site={site} />
 
       <main className="flex-1">
         {/* HERO SECTION */}
@@ -24,38 +29,38 @@ export default function HomePage() {
             {/* Tag / Pre-headline */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#EAE7DF] border border-[#DDD9CE] text-xs font-mono tracking-wider text-[#64625C]">
               <span className="w-2 h-2 rounded-full bg-[#141413]" />
-              <span>{SITE_METADATA.hero?.badge || "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"}</span>
+              <span>{site.hero?.badge || "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"}</span>
             </div>
 
             {/* Main Editorial Headline */}
             <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-[#141413] leading-[1.04]">
-              {SITE_METADATA.hero?.headlinePrefix || "Translating zero-to-one concepts into"}{" "}
+              {site.hero?.headlinePrefix || "Translating zero-to-one concepts into"}{" "}
               <span className="font-serif italic font-normal text-[#5A5852]">
-                {SITE_METADATA.hero?.headlineItalic || "shelf-ready systems"}
+                {site.hero?.headlineItalic || "shelf-ready systems"}
               </span>
-              {SITE_METADATA.hero?.headlineSuffix || ", commercial campaigns, & executive editorial."}
+              {site.hero?.headlineSuffix || ", commercial campaigns, & executive editorial."}
             </h1>
 
             {/* Sub-paragraph */}
             <p className="text-lg sm:text-xl text-[#5A5852] max-w-3xl font-normal leading-relaxed pt-2">
-              {SITE_METADATA.hero?.subheadline ||
+              {site.hero?.subheadline ||
                 "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications."}
             </p>
 
             {/* Quick Action Buttons & Scroll Anchor */}
             <div className="flex flex-wrap items-center gap-4 pt-4">
               <a
-                href={SITE_METADATA.hero?.primaryButtonLink || "#work"}
+                href={site.hero?.primaryButtonLink || "#work"}
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5] hover:bg-[#2D2B27] transition-colors"
               >
-                <span>{SITE_METADATA.hero?.primaryButtonText || "Explore Featured Work"}</span>
+                <span>{site.hero?.primaryButtonText || "Explore Featured Work"}</span>
                 <ArrowDown className="w-3.5 h-3.5" />
               </a>
               <Link
-                href={SITE_METADATA.hero?.secondaryButtonLink || "/about"}
+                href={site.hero?.secondaryButtonLink || "/about"}
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full border border-[#D5D1C7] text-[#141413] hover:bg-[#EAE7DF] transition-colors"
               >
-                <span>{SITE_METADATA.hero?.secondaryButtonText || "Read Profile & Approach"}</span>
+                <span>{site.hero?.secondaryButtonText || "Read Profile & Approach"}</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -63,7 +68,7 @@ export default function HomePage() {
 
           {/* Quick Pillar Index Strip */}
           <div id="pillars" className="mt-24 pt-10 border-t border-[#E5E2DA] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PROJECTS.map((project, index) => (
+            {projects.map((project, index) => (
               <Link
                 key={project.id}
                 href={`/work/${project.slug}`}
@@ -74,7 +79,7 @@ export default function HomePage() {
                     <span className="font-mono text-xs font-semibold text-[#8A8881]">
                       PILLAR {project.pillarNumber}
                     </span>
-                    {pillarIcons[index]}
+                    {pillarIcons[index % pillarIcons.length]}
                   </div>
                   <h3 className="font-editorial text-xl text-[#141413] group-hover:text-[#64625C] transition-colors">
                     {project.title}
@@ -98,20 +103,20 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-12">
             <div className="space-y-3">
               <span className="text-xs font-mono uppercase tracking-widest text-[#8A8881]">
-                Core Curated Portfolio
+                {site.workSection?.kicker || "Core Curated Portfolio"}
               </span>
               <h2 className="font-editorial text-4xl sm:text-5xl lg:text-6xl text-[#141413] tracking-tight">
-                The Four Pillars
+                {site.workSection?.title || "The Four Pillars"}
               </h2>
             </div>
             <p className="text-sm text-[#64625C] max-w-md font-normal leading-relaxed">
-              Every angle required by design directors, brand managers, and lead recruiters:
-              from zero-to-one design systems and manufacturing specs to commercial film and bilingual publications.
+              {site.workSection?.description ||
+                "Every angle required by design directors, brand managers, and lead recruiters: from zero-to-one design systems and manufacturing specs to commercial film and bilingual publications."}
             </p>
           </div>
 
           <div className="space-y-12">
-            {PROJECTS.map((project, index) => (
+            {projects.map((project, index) => (
               <ProjectCard key={project.id} project={project} index={index} />
             ))}
           </div>
@@ -133,7 +138,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {SITE_METADATA.capabilities.map((group, index) => (
+              {(site.capabilities || []).map((group) => (
                 <div
                   key={group.category}
                   className="p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4"
@@ -163,7 +168,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <Footer />
+      <Footer site={site} />
     </>
   );
 }

@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X, ArrowUpRight } from "lucide-react";
-import { SITE_METADATA } from "@/data/projects";
+import { SITE_METADATA, SiteMetadata } from "@/data/projects";
 
-export default function Header() {
+export default function Header({ site }: { site?: SiteMetadata }) {
+  const currentSite = site || SITE_METADATA;
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = SITE_METADATA.navLinks || [
+  const navLinks = currentSite.navLinks || [
     { id: "work", label: "Work", href: "/#work" },
     { id: "pillars", label: "Pillars", href: "/#pillars" },
     { id: "about", label: "About", href: "/about" },
@@ -26,7 +27,7 @@ export default function Header() {
           className="group flex flex-col items-start transition-opacity hover:opacity-80"
         >
           <span className="font-editorial text-2xl tracking-tight text-[#141413]">
-            {SITE_METADATA.author}
+            {currentSite.author}
           </span>
           <span className="text-[11px] uppercase tracking-widest text-[#8A8881] font-medium">
             Creative Direction &amp; Brand Identity
@@ -35,13 +36,13 @@ export default function Header() {
 
         {/* Availability Badge & Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
-          {SITE_METADATA.availableForProjects !== false && (
+          {currentSite.availableForProjects !== false && (
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAE7DF]/70 text-[12px] text-[#64625C] border border-[#DDD9CE]">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
               </span>
-              <span>{SITE_METADATA.availabilityText || "Available for Select Projects"}</span>
+              <span>{currentSite.availabilityText || "Available for Select Projects"}</span>
             </div>
           )}
 
@@ -61,7 +62,7 @@ export default function Header() {
               );
             })}
             <a
-              href={`mailto:${SITE_METADATA.email}`}
+              href={`mailto:${currentSite.email}`}
               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors"
             >
               Get in Touch
@@ -85,12 +86,12 @@ export default function Header() {
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#FAF9F5] border-b border-[#E5E2DA] px-6 py-6 space-y-4">
-          {SITE_METADATA.availableForProjects !== false && (
+          {currentSite.availableForProjects !== false && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EAE7DF] text-[12px] text-[#64625C] border border-[#DDD9CE] w-fit">
               <span className="relative flex h-2 w-2">
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
               </span>
-              <span>{SITE_METADATA.availabilityText || "Available for Select Projects"}</span>
+              <span>{currentSite.availabilityText || "Available for Select Projects"}</span>
             </div>
           )}
 
@@ -106,7 +107,7 @@ export default function Header() {
               </Link>
             ))}
             <a
-              href={`mailto:${SITE_METADATA.email}`}
+              href={`mailto:${currentSite.email}`}
               onClick={() => setMobileMenuOpen(false)}
               className="inline-flex items-center justify-center gap-2 px-5 py-3 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5] mt-4"
             >
