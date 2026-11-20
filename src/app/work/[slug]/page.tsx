@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import ComparisonSlider from "@/components/ComparisonSlider";
 import DielineInspector from "@/components/DielineInspector";
 import VideoPlayer from "@/components/VideoPlayer";
+import CarouselSlider from "@/components/CarouselSlider";
 import { getLiveProjects, getLiveSite } from "@/data/content-store";
 
 export async function generateMetadata({
@@ -261,78 +262,150 @@ export default async function CaseStudyPage({
           </div>
         </section>
 
-        {/* BESPOKE SECTIONS (DIELINE, COMPARISON, GALLERY) */}
-        {project.sections.map((section) => (
-          <section
-            key={section.id}
-            className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 border-t border-[#E5E2DA] space-y-8"
-          >
-            <div className="max-w-3xl space-y-2">
-              {section.kicker && (
-                <span className="text-xs font-mono uppercase tracking-widest text-[#8A8881]">
-                  {section.kicker}
-                </span>
-              )}
-              <h2 className="font-editorial text-3xl sm:text-4xl text-[#141413]">
-                {section.title}
-              </h2>
-              <p className="text-sm sm:text-base text-[#5A5852] leading-relaxed">
-                {section.description}
-              </p>
-            </div>
+        {/* BESPOKE SECTIONS (DIELINE, COMPARISON, GALLERY, CAROUSEL) */}
+        {project.sections.map((section) => {
+          const spacingClass =
+            section.spacing === "compact"
+              ? "py-10"
+              : section.spacing === "generous"
+              ? "py-24"
+              : "py-16";
 
-            {/* Dynamic Rendering Based on Section Type */}
-            {section.type === "dieline" && section.dielineData && (
-              <DielineInspector
-                dielineData={section.dielineData}
-                coverImage={project.coverImage}
-              />
-            )}
+          const titleSizeClass =
+            section.fontSize === "7xl"
+              ? "text-5xl sm:text-6xl lg:text-7xl"
+              : section.fontSize === "5xl"
+              ? "text-4xl sm:text-5xl"
+              : section.fontSize === "xl"
+              ? "text-2xl sm:text-3xl"
+              : "text-3xl sm:text-4xl";
 
-            {section.type === "comparison" && section.comparisonData && (
-              <ComparisonSlider
-                beforeLabel={section.comparisonData.beforeLabel}
-                afterLabel={section.comparisonData.afterLabel}
-                beforeImage={section.comparisonData.beforeImage}
-                afterImage={section.comparisonData.afterImage}
-                beforeDescription={section.comparisonData.beforeDescription}
-                afterDescription={section.comparisonData.afterDescription}
-              />
-            )}
+          const hasBgImage =
+            section.background?.type === "image" && section.background?.imageUrl;
+          const hasBgColor =
+            section.background?.type === "color" && section.background?.color;
 
-            {(section.type === "gallery" || section.type === "editorial") &&
-              section.items && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                  {section.items.map((item, index) => (
-                    <div
-                      key={index}
-                      className="group p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4 shadow-xs"
-                    >
-                      <div className="relative aspect-16/9 w-full rounded-lg overflow-hidden border border-[#E5E2DA] bg-[#F2EFE9]">
-                        <Image
-                          src={item.image || project.coverImage}
-                          alt={item.caption}
-                          fill
-                          className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-102 transition-all duration-500"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <h4 className="font-editorial text-lg text-[#141413]">
-                          {item.caption}
-                        </h4>
-                        {item.subcaption && (
-                          <p className="text-xs text-[#64625C] leading-relaxed">
-                            {item.subcaption}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+          return (
+            <section
+              key={section.id}
+              className={`relative border-t border-[#E5E2DA] ${spacingClass} ${
+                hasBgColor ? "" : ""
+              }`}
+              style={{
+                backgroundColor: hasBgColor ? section.background?.color : undefined,
+              }}
+            >
+              {/* Optional Background Image with Overlay */}
+              {hasBgImage && (
+                <div className="absolute inset-0 z-0 overflow-hidden">
+                  <Image
+                    src={section.background!.imageUrl!}
+                    alt="Section background"
+                    fill
+                    className="object-cover"
+                  />
+                  <div
+                    className="absolute inset-0 bg-[#141413]"
+                    style={{
+                      opacity: section.background?.overlayOpacity ?? 0.5,
+                    }}
+                  />
                 </div>
               )}
-          </section>
-        ))}
+
+              <div
+                className={`relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 space-y-8 ${
+                  hasBgImage ? "text-[#FAF9F5]" : ""
+                }`}
+              >
+                <div className="max-w-3xl space-y-2">
+                  {section.kicker && (
+                    <span
+                      className={`text-xs font-mono uppercase tracking-widest ${
+                        hasBgImage ? "text-amber-300" : "text-[#8A8881]"
+                      }`}
+                    >
+                      {section.kicker}
+                    </span>
+                  )}
+                  <h2
+                    className={`font-editorial ${titleSizeClass} ${
+                      hasBgImage ? "text-[#FAF9F5]" : "text-[#141413]"
+                    }`}
+                  >
+                    {section.title}
+                  </h2>
+                  <p
+                    className={`text-sm sm:text-base leading-relaxed ${
+                      hasBgImage ? "text-[#EAE7DF]" : "text-[#5A5852]"
+                    }`}
+                  >
+                    {section.description}
+                  </p>
+                </div>
+
+                {/* Dynamic Rendering Based on Section Type */}
+                {section.type === "carousel" && section.items && (
+                  <CarouselSlider
+                    items={section.items}
+                    fallbackImage={project.coverImage}
+                    settings={section.carouselSettings}
+                  />
+                )}
+
+                {section.type === "dieline" && section.dielineData && (
+                  <DielineInspector
+                    dielineData={section.dielineData}
+                    coverImage={project.coverImage}
+                  />
+                )}
+
+                {section.type === "comparison" && section.comparisonData && (
+                  <ComparisonSlider
+                    beforeLabel={section.comparisonData.beforeLabel}
+                    afterLabel={section.comparisonData.afterLabel}
+                    beforeImage={section.comparisonData.beforeImage}
+                    afterImage={section.comparisonData.afterImage}
+                    beforeDescription={section.comparisonData.beforeDescription}
+                    afterDescription={section.comparisonData.afterDescription}
+                  />
+                )}
+
+                {(section.type === "gallery" || section.type === "editorial") &&
+                  section.items && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                      {section.items.map((item, index) => (
+                        <div
+                          key={index}
+                          className="group p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4 shadow-xs"
+                        >
+                          <div className="relative aspect-16/9 w-full rounded-lg overflow-hidden border border-[#E5E2DA] bg-[#F2EFE9]">
+                            <Image
+                              src={item.image || project.coverImage}
+                              alt={item.caption}
+                              fill
+                              className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-102 transition-all duration-500"
+                              sizes="(max-width: 768px) 100vw, 50vw"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <h4 className="font-editorial text-lg text-[#141413]">
+                              {item.caption}
+                            </h4>
+                            {item.subcaption && (
+                              <p className="text-xs text-[#64625C] leading-relaxed">
+                                {item.subcaption}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </section>
+          );
+        })}
 
         {/* BOTTOM CASE STUDY NEXT / PREV NAVIGATION */}
         <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 border-t border-[#E5E2DA]">

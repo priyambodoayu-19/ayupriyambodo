@@ -30,8 +30,19 @@ import {
   Image as ImageIcon,
   Tag,
   SlidersHorizontal,
+  Copy,
+  Monitor,
+  Smartphone,
+  Palette,
+  Type,
+  Maximize2,
+  Sparkle,
+  Settings2,
+  HelpCircle,
 } from "lucide-react";
-import { ProjectItem, ProjectSection, SiteMetadata, ToolchainItem } from "@/data/projects";
+import { ProjectItem, ProjectSection, SectionBackground, CarouselSettings, SiteMetadata, ToolchainItem } from "@/data/projects";
+import CarouselSlider from "@/components/CarouselSlider";
+import ComparisonSlider from "@/components/ComparisonSlider";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -42,6 +53,12 @@ export default function AdminDashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+
+  // Visual Builder Modes
+  const [viewMode, setViewMode] = useState<"visual" | "form">("visual");
+  const [devicePreview, setDevicePreview] = useState<"desktop" | "mobile">("desktop");
+  const [selectedSectionIdx, setSelectedSectionIdx] = useState<number | null>(0);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   // Check auth and load content on mount
   useEffect(() => {
@@ -104,7 +121,7 @@ export default function AdminDashboardPage() {
   // SITE METADATA HELPERS
   // ==========================================
 
-  const updateSiteHero = (field: string, value: string) => {
+  const updateSiteHero = (field: string, value: any) => {
     if (!site) return;
     setSite({
       ...site,
@@ -115,13 +132,29 @@ export default function AdminDashboardPage() {
           headlineItalic: "shelf-ready systems",
           headlineSuffix: ", commercial campaigns, & executive editorial.",
           subheadline:
-            "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications.",
+            "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds.",
           primaryButtonText: "Explore Featured Work",
           primaryButtonLink: "#work",
           secondaryButtonText: "Read Profile & Approach",
           secondaryButtonLink: "/about",
+          fontSize: "7xl",
+          spacing: "normal",
         }),
         [field]: value,
+      },
+    });
+  };
+
+  const updateSiteHeroBackground = (field: string, value: any) => {
+    if (!site) return;
+    setSite({
+      ...site,
+      hero: {
+        ...site.hero,
+        background: {
+          ...(site.hero?.background || { type: "color", color: "#FAF9F5" }),
+          [field]: value,
+        },
       },
     });
   };
@@ -134,7 +167,7 @@ export default function AdminDashboardPage() {
         ...(site.about || {
           badge: "Profile & Perspective",
           headline: "Designing with aesthetic authority & manufacturing rigor.",
-          subheading: "Bridging the gap between zero-to-one brand storytelling and real-world physical manufacturing.",
+          subheading: "Bridging the gap between zero-to-one brand storytelling and physical manufacturing.",
           storyParagraphs: [],
           statusBoxTitle: "Current Status",
           statusBoxText: "Accepting select brand identity engagements for Q3/Q4.",
@@ -346,7 +379,7 @@ export default function AdminDashboardPage() {
     );
   };
 
-  // Deliverables Helpers (Scope of Work / Delivered Outputs)
+  // Deliverables Helpers
   const updateProjectDeliverable = (slug: string, index: number, val: string) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -384,7 +417,7 @@ export default function AdminDashboardPage() {
     );
   };
 
-  // Technical Standards / Specs Helpers
+  // Technical Specs Helpers
   const updateProjectSpecKey = (slug: string, oldKey: string, newKey: string) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -448,7 +481,7 @@ export default function AdminDashboardPage() {
   };
 
   // ==========================================
-  // SECTIONS & GALLERY ITEMS HELPERS
+  // MODULAR SECTION & VISUAL BUILDER HELPERS
   // ==========================================
 
   const updateSectionField = (slug: string, secIdx: number, field: string, val: any) => {
@@ -466,29 +499,168 @@ export default function AdminDashboardPage() {
     );
   };
 
-  const addSection = (slug: string) => {
+  const updateSectionBackground = (slug: string, secIdx: number, field: string, val: any) => {
     setProjects((prev) =>
       prev.map((p) => {
         if (p.slug === slug) {
-          const newSec: ProjectSection = {
-            id: `sec-${Date.now()}`,
-            title: "New Architectural Section",
-            kicker: "System Foundations",
-            description: "Detailed description of this section's rationale and design execution.",
-            type: "gallery",
-            items: [
-              {
-                caption: "First Visual Component",
-                subcaption: "Technical explanation or design rationale.",
-                aspect: "4/3",
-              },
-            ],
-          };
-          return { ...p, sections: [...(p.sections || []), newSec] };
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            const currentBg = sections[secIdx].background || { type: "color", color: "#FAF9F5" };
+            sections[secIdx] = {
+              ...sections[secIdx],
+              background: { ...currentBg, [field]: val },
+            };
+          }
+          return { ...p, sections };
         }
         return p;
       })
     );
+  };
+
+  const updateSectionCarouselSettings = (slug: string, secIdx: number, field: string, val: any) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          if (sections[secIdx]) {
+            const currentSettings = sections[secIdx].carouselSettings || {
+              autoplay: false,
+              intervalSeconds: 5,
+              showArrows: true,
+              showDots: true,
+            };
+            sections[secIdx] = {
+              ...sections[secIdx],
+              carouselSettings: { ...currentSettings, [field]: val },
+            };
+          }
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const moveSection = (slug: string, secIdx: number, direction: "up" | "down") => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          const targetIdx = direction === "up" ? secIdx - 1 : secIdx + 1;
+          if (targetIdx < 0 || targetIdx >= sections.length) return p;
+          const temp = sections[secIdx];
+          sections[secIdx] = sections[targetIdx];
+          sections[targetIdx] = temp;
+          setSelectedSectionIdx(targetIdx);
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const duplicateSection = (slug: string, secIdx: number) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          const sections = [...(p.sections || [])];
+          const original = sections[secIdx];
+          if (!original) return p;
+          const cloned: ProjectSection = {
+            ...original,
+            id: `sec-${Date.now()}`,
+            title: `${original.title} (Copy)`,
+          };
+          sections.splice(secIdx + 1, 0, cloned);
+          setSelectedSectionIdx(secIdx + 1);
+          return { ...p, sections };
+        }
+        return p;
+      })
+    );
+  };
+
+  const addSectionWithTemplate = (slug: string, templateType: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.slug === slug) {
+          let newSec: ProjectSection;
+          if (templateType === "carousel") {
+            newSec = {
+              id: `sec-${Date.now()}`,
+              title: "Interactive Visual Carousel",
+              kicker: "Curated Showcase",
+              description: "Swipe or use navigation controls to explore the visual gallery.",
+              type: "carousel",
+              spacing: "normal",
+              fontSize: "3xl",
+              carouselSettings: {
+                autoplay: true,
+                intervalSeconds: 4,
+                showArrows: true,
+                showDots: true,
+              },
+              items: [
+                {
+                  caption: "Primary Formulation Slide",
+                  subcaption: "High-resolution packaging profile with spot Pantone finishes.",
+                  image: p.coverImage,
+                  aspect: "16/9",
+                },
+                {
+                  caption: "Secondary Detail Slide",
+                  subcaption: "Macro focus on tactile unboxing and debossed closures.",
+                  image: p.coverImage,
+                  aspect: "16/9",
+                },
+              ],
+            };
+          } else if (templateType === "comparison") {
+            newSec = {
+              id: `sec-${Date.now()}`,
+              title: "Transformation & Retouching Slider",
+              kicker: "Before & After",
+              description: "Drag the slider handle to inspect precision retouching and color grading.",
+              type: "comparison",
+              spacing: "normal",
+              fontSize: "3xl",
+              comparisonData: {
+                beforeLabel: "Raw Camera Capture",
+                afterLabel: "Commercial Retouched Master",
+                beforeImage: p.coverImage,
+                afterImage: p.coverImage,
+                beforeDescription: "Flat log-profile capture prior to color grading.",
+                afterDescription: "Polished luxury visual with calibrated specular highlights.",
+              },
+            };
+          } else {
+            newSec = {
+              id: `sec-${Date.now()}`,
+              title: "New Architectural Section",
+              kicker: "System Foundations",
+              description: "Detailed description of this section's rationale and design execution.",
+              type: "gallery",
+              spacing: "normal",
+              fontSize: "3xl",
+              items: [
+                {
+                  caption: "First Visual Component",
+                  subcaption: "Technical explanation or design rationale.",
+                  image: p.coverImage,
+                  aspect: "4/3",
+                },
+              ],
+            };
+          }
+          const updated = [...(p.sections || []), newSec];
+          setSelectedSectionIdx(updated.length - 1);
+          return { ...p, sections: updated };
+        }
+        return p;
+      })
+    );
+    setShowTemplateModal(false);
   };
 
   const removeSection = (slug: string, secIdx: number) => {
@@ -501,6 +673,7 @@ export default function AdminDashboardPage() {
         return p;
       })
     );
+    setSelectedSectionIdx(null);
   };
 
   const updateSectionItem = (
@@ -567,62 +740,6 @@ export default function AdminDashboardPage() {
     );
   };
 
-  const updateSectionDieline = (slug: string, secIdx: number, field: string, val: any) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.slug === slug) {
-          const sections = [...(p.sections || [])];
-          if (sections[secIdx]) {
-            sections[secIdx] = {
-              ...sections[secIdx],
-              dielineData: {
-                ...(sections[secIdx].dielineData || {
-                  substrate: "",
-                  dimensions: "",
-                  bleed: "",
-                  creaseGuide: "",
-                  finishes: [],
-                  colorSeparation: [],
-                }),
-                [field]: val,
-              },
-            };
-          }
-          return { ...p, sections };
-        }
-        return p;
-      })
-    );
-  };
-
-  const updateSectionComparison = (slug: string, secIdx: number, field: string, val: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.slug === slug) {
-          const sections = [...(p.sections || [])];
-          if (sections[secIdx]) {
-            sections[secIdx] = {
-              ...sections[secIdx],
-              comparisonData: {
-                ...(sections[secIdx].comparisonData || {
-                  beforeLabel: "",
-                  afterLabel: "",
-                  beforeImage: "",
-                  afterImage: "",
-                  beforeDescription: "",
-                  afterDescription: "",
-                }),
-                [field]: val,
-              },
-            };
-          }
-          return { ...p, sections };
-        }
-        return p;
-      })
-    );
-  };
-
   const addNewProject = () => {
     const newSlug = `new-case-study-${Date.now().toString().slice(-4)}`;
     const newPillarNumber = String(projects.length + 1).padStart(2, "0");
@@ -662,6 +779,8 @@ export default function AdminDashboardPage() {
           kicker: "System Foundations",
           description: "The identity is built upon an unyielding mathematical grid and custom type systems.",
           type: "gallery",
+          spacing: "normal",
+          fontSize: "3xl",
           items: [
             {
               caption: "Logotype Anatomy & Kerning Matrix",
@@ -675,6 +794,7 @@ export default function AdminDashboardPage() {
 
     setProjects([...projects, newProject]);
     setActiveTab(newSlug);
+    setSelectedSectionIdx(0);
   };
 
   const deleteProject = (slug: string) => {
@@ -699,23 +819,81 @@ export default function AdminDashboardPage() {
   }
 
   const selectedProject = projects.find((p) => p.slug === activeTab);
+  const activeSection =
+    selectedProject && selectedSectionIdx !== null && selectedProject.sections
+      ? selectedProject.sections[selectedSectionIdx]
+      : null;
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] text-[#141413] flex flex-col">
-      {/* Top Admin Sticky Navbar */}
-      <header className="sticky top-0 z-50 bg-[#FAF9F5]/95 backdrop-blur-md border-b border-[#E5E2DA] px-6 lg:px-12 h-20 flex items-center justify-between">
+    <div className="min-h-screen bg-[#FAF9F5] text-[#141413] flex flex-col font-sans">
+      {/* Top Admin Sticky Navbar with Mode Toggles */}
+      <header className="sticky top-0 z-50 bg-[#FAF9F5]/95 backdrop-blur-md border-b border-[#E5E2DA] px-4 lg:px-8 h-18 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="font-editorial text-xl text-[#141413] hover:opacity-80">
             Ayu Priyambodo
           </Link>
           <span className="hidden sm:inline px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[#EAE7DF] text-[#64625C] border border-[#DDD9CE]">
-            Studio CMS &amp; Website Builder
+            Studio CMS &amp; Page Builder
           </span>
         </div>
 
+        {/* Center Mode Controls: Visual Page Builder vs Form Editor */}
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#EAE7DF] border border-[#DDD9CE]">
+          <button
+            onClick={() => setViewMode("visual")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              viewMode === "visual"
+                ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
+                : "text-[#5A5852] hover:text-[#141413]"
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Visual Builder</span>
+          </button>
+          <button
+            onClick={() => setViewMode("form")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              viewMode === "form"
+                ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
+                : "text-[#5A5852] hover:text-[#141413]"
+            }`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Structured Editor</span>
+          </button>
+        </div>
+
+        {/* Right Actions: Device Preview, Save & Logout */}
         <div className="flex items-center gap-3">
+          {viewMode === "visual" && (
+            <div className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-[#EAE7DF] border border-[#DDD9CE]">
+              <button
+                onClick={() => setDevicePreview("desktop")}
+                className={`p-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                  devicePreview === "desktop"
+                    ? "bg-[#141413] text-[#FAF9F5]"
+                    : "text-[#5A5852] hover:text-[#141413]"
+                }`}
+                title="Desktop View"
+              >
+                <Monitor className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setDevicePreview("mobile")}
+                className={`p-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                  devicePreview === "mobile"
+                    ? "bg-[#141413] text-[#FAF9F5]"
+                    : "text-[#5A5852] hover:text-[#141413]"
+                }`}
+                title="Mobile View (420px)"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           {saveSuccess && (
-            <span className="hidden md:inline-flex items-center gap-1.5 text-xs text-emerald-700 font-medium animate-fadeIn">
+            <span className="hidden md:inline-flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
               <Check className="w-4 h-4" />
               <span>{statusMessage || "Saved"}</span>
             </span>
@@ -749,11 +927,11 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      {/* Main CMS Layout with Sidebar Navigation Tree */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-12 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-        {/* Navigation Sidebar Tree */}
+      {/* Main CMS Layout */}
+      <div className="flex-1 w-full mx-auto px-4 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Sidebar: Pages & Blocks Navigator */}
         <aside className="lg:col-span-3 space-y-6">
-          {/* PAGES GROUP */}
+          {/* PAGES TREE */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
               <span className="flex items-center gap-1.5">
@@ -767,8 +945,11 @@ export default function AdminDashboardPage() {
 
             {/* Home Page */}
             <button
-              onClick={() => setActiveTab("home")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
+              onClick={() => {
+                setActiveTab("home");
+                setSelectedSectionIdx(null);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
                 activeTab === "home"
                   ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
                   : "text-[#4A4843] hover:bg-[#F0EEE8]"
@@ -783,8 +964,11 @@ export default function AdminDashboardPage() {
 
             {/* About Page */}
             <button
-              onClick={() => setActiveTab("about")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
+              onClick={() => {
+                setActiveTab("about");
+                setSelectedSectionIdx(null);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
                 activeTab === "about"
                   ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
                   : "text-[#4A4843] hover:bg-[#F0EEE8]"
@@ -799,8 +983,11 @@ export default function AdminDashboardPage() {
 
             {/* Work Section Overview */}
             <button
-              onClick={() => setActiveTab("work-overview")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
+              onClick={() => {
+                setActiveTab("work-overview");
+                setSelectedSectionIdx(null);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
                 activeTab === "work-overview"
                   ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
                   : "text-[#4A4843] hover:bg-[#F0EEE8]"
@@ -832,7 +1019,10 @@ export default function AdminDashboardPage() {
                 return (
                   <button
                     key={p.slug}
-                    onClick={() => setActiveTab(p.slug)}
+                    onClick={() => {
+                      setActiveTab(p.slug);
+                      setSelectedSectionIdx(0);
+                    }}
                     className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                       isCurrent
                         ? "bg-[#141413] text-[#FAF9F5] font-medium"
@@ -860,6 +1050,49 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
+          {/* ACTIVE PAGE SECTIONS OUTLINE (FOR VISUAL BUILDER) */}
+          {selectedProject && (
+            <div className="p-4 rounded-xl bg-[#F4F2EC] border border-[#E5E2DA] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
+                  Section Blocks ({selectedProject.sections?.length || 0})
+                </span>
+                <button
+                  onClick={() => setShowTemplateModal(true)}
+                  className="inline-flex items-center gap-1 text-[11px] font-mono text-[#141413] hover:underline cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Insert Block</span>
+                </button>
+              </div>
+
+              <div className="space-y-1.5">
+                {(selectedProject.sections || []).map((sec, idx) => {
+                  const isSelected = selectedSectionIdx === idx;
+                  return (
+                    <div
+                      key={sec.id || idx}
+                      onClick={() => setSelectedSectionIdx(idx)}
+                      className={`flex items-center justify-between p-2 rounded-lg text-xs cursor-pointer transition-all ${
+                        isSelected
+                          ? "bg-[#141413] text-[#FAF9F5] font-medium"
+                          : "bg-[#FAF9F5] text-[#4A4843] hover:bg-[#EAE7DF]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="font-mono text-[10px] opacity-60">0{idx + 1}</span>
+                        <span className="truncate">{sec.title}</span>
+                      </div>
+                      <span className="text-[9px] font-mono uppercase opacity-70 px-1.5 py-0.5 rounded bg-black/10">
+                        {sec.type}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* SITE SETTINGS GROUP */}
           <div className="space-y-1.5 pt-4 border-t border-[#E5E2DA]">
             <div className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
@@ -868,8 +1101,11 @@ export default function AdminDashboardPage() {
             </div>
 
             <button
-              onClick={() => setActiveTab("navigation")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
+              onClick={() => {
+                setActiveTab("navigation");
+                setSelectedSectionIdx(null);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
                 activeTab === "navigation"
                   ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
                   : "text-[#4A4843] hover:bg-[#F0EEE8]"
@@ -885,8 +1121,11 @@ export default function AdminDashboardPage() {
             </button>
 
             <button
-              onClick={() => setActiveTab("site")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
+              onClick={() => {
+                setActiveTab("site");
+                setSelectedSectionIdx(null);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-left text-xs font-medium transition-all cursor-pointer ${
                 activeTab === "site"
                   ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
                   : "text-[#4A4843] hover:bg-[#F0EEE8]"
@@ -900,1756 +1139,787 @@ export default function AdminDashboardPage() {
           </div>
         </aside>
 
-        {/* Tab Content Editor Panel */}
-        <main className="lg:col-span-9 bg-[#F4F2EC] border border-[#E5E2DA] rounded-2xl p-6 sm:p-10 space-y-10">
-          {/* ========================================================= */}
-          {/* 1. HOME PAGE EDITOR */}
-          {/* ========================================================= */}
-          {activeTab === "home" && (
-            <div className="space-y-8">
-              <div className="border-b border-[#E5E2DA] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#8A8881]">
-                    <span className="px-2 py-0.5 rounded bg-[#EAE7DF] text-[#64625C]">Route: /</span>
-                    <span>·</span>
-                    <span>PRIMARY LANDING PAGE</span>
-                  </div>
-                  <h2 className="font-editorial text-3xl sm:text-4xl text-[#141413]">
-                    Home Page &amp; Hero Editor
-                  </h2>
-                  <p className="text-xs text-[#64625C] pt-1">
-                    Manage the main positioning statement, editorial typography, and intro paragraph.
-                  </p>
-                </div>
-
-                <Link
-                  href="/"
-                  target="_blank"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono uppercase bg-[#FAF9F5] border border-[#D5D1C7] hover:bg-[#EAE7DF] transition-colors"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>View Live</span>
-                </Link>
-              </div>
-
-              {/* Real-time Visual Preview Card */}
-              <div className="p-6 sm:p-8 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-6 shadow-xs">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
-                  Live Editorial Preview
-                </span>
-
-                <div className="space-y-4 max-w-3xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAE7DF] text-[11px] font-mono text-[#64625C] border border-[#DDD9CE]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#141413]" />
-                    <span>{site.hero?.badge || "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"}</span>
-                  </div>
-
-                  <h3 className="font-editorial text-2xl sm:text-3xl text-[#141413] leading-snug">
-                    {site.hero?.headlinePrefix || "Translating zero-to-one concepts into"}{" "}
-                    <span className="font-serif italic font-normal text-[#5A5852]">
-                      {site.hero?.headlineItalic || "shelf-ready systems"}
-                    </span>
-                    {site.hero?.headlineSuffix || ", commercial campaigns, & executive editorial."}
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-[#5A5852] leading-relaxed">
-                    {site.hero?.subheadline ||
-                      "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds..."}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-3 pt-2">
-                    <span className="px-4 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5]">
-                      {site.hero?.primaryButtonText || "Explore Featured Work"}
-                    </span>
-                    <span className="px-4 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full border border-[#D5D1C7] text-[#141413]">
-                      {site.hero?.secondaryButtonText || "Read Profile & Approach"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Top Tagline Badge */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                  Top Tagline Badge
-                </label>
-                <input
-                  type="text"
-                  value={site.hero?.badge || ""}
-                  onChange={(e) => updateSiteHero("badge", e.target.value)}
-                  placeholder="e.g. CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"
-                  className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                />
-              </div>
-
-              {/* Headline Split Fields */}
-              <div className="space-y-4 p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA]">
-                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                  Main Editorial Headline Anatomy
-                </h4>
-                <p className="text-xs text-[#64625C]">
-                  Split into three parts so you can emphasize specific words with the luxury italic font style.
-                </p>
-
-                <div className="space-y-3 pt-2">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      1. Headline Opening Prefix
-                    </label>
-                    <input
-                      type="text"
-                      value={site.hero?.headlinePrefix || ""}
-                      onChange={(e) => updateSiteHero("headlinePrefix", e.target.value)}
-                      placeholder="e.g. Translating zero-to-one concepts into"
-                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-amber-800">
-                      2. Highlighted Emphasis Phrase (Renders in Editorial Italic)
-                    </label>
-                    <input
-                      type="text"
-                      value={site.hero?.headlineItalic || ""}
-                      onChange={(e) => updateSiteHero("headlineItalic", e.target.value)}
-                      placeholder="e.g. shelf-ready systems"
-                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-amber-300 text-sm font-serif italic text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      3. Headline Closing Suffix
-                    </label>
-                    <input
-                      type="text"
-                      value={site.hero?.headlineSuffix || ""}
-                      onChange={(e) => updateSiteHero("headlineSuffix", e.target.value)}
-                      placeholder="e.g. , commercial campaigns, & executive editorial."
-                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Subheadline Paragraph */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                  Subheadline / Introductory Paragraph
-                </label>
-                <textarea
-                  rows={4}
-                  value={site.hero?.subheadline || ""}
-                  onChange={(e) => updateSiteHero("subheadline", e.target.value)}
-                  placeholder="Describe your creative partnership approach..."
-                  className="w-full px-4 py-3 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413] leading-relaxed"
-                />
-              </div>
-
-              {/* Call to Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-                <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3">
-                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                    Primary Button (Dark)
-                  </h4>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={site.hero?.primaryButtonText || ""}
-                      onChange={(e) => updateSiteHero("primaryButtonText", e.target.value)}
-                      placeholder="Label (e.g. Explore Featured Work)"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                    />
-                    <input
-                      type="text"
-                      value={site.hero?.primaryButtonLink || ""}
-                      onChange={(e) => updateSiteHero("primaryButtonLink", e.target.value)}
-                      placeholder="Link (e.g. #work)"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3">
-                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                    Secondary Button (Outline)
-                  </h4>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={site.hero?.secondaryButtonText || ""}
-                      onChange={(e) => updateSiteHero("secondaryButtonText", e.target.value)}
-                      placeholder="Label (e.g. Read Profile & Approach)"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                    />
-                    <input
-                      type="text"
-                      value={site.hero?.secondaryButtonLink || ""}
-                      onChange={(e) => updateSiteHero("secondaryButtonLink", e.target.value)}
-                      placeholder="Link (e.g. /about)"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* 2. ABOUT PAGE EDITOR */}
-          {/* ========================================================= */}
-          {activeTab === "about" && (
-            <div className="space-y-8">
-              <div className="border-b border-[#E5E2DA] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#8A8881]">
-                    <span className="px-2 py-0.5 rounded bg-[#EAE7DF] text-[#64625C]">Route: /about</span>
-                    <span>·</span>
-                    <span>BIOGRAPHY &amp; METHODOLOGY</span>
-                  </div>
-                  <h2 className="font-editorial text-3xl sm:text-4xl text-[#141413]">
-                    About Page Editor
-                  </h2>
-                  <p className="text-xs text-[#64625C] pt-1">
-                    Edit your editorial manifesto, story paragraphs, availability status box, and toolchain fluency.
-                  </p>
-                </div>
-
-                <Link
-                  href="/about"
-                  target="_blank"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono uppercase bg-[#FAF9F5] border border-[#D5D1C7] hover:bg-[#EAE7DF] transition-colors"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>View Live</span>
-                </Link>
-              </div>
-
-              {/* About Header Fields */}
-              <div className="space-y-4 p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA]">
-                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                  Page Header &amp; Manifesto
-                </h4>
-
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      Header Tagline / Kicker Badge
-                    </label>
-                    <input
-                      type="text"
-                      value={site.about?.badge || ""}
-                      onChange={(e) => updateSiteAbout("badge", e.target.value)}
-                      placeholder="e.g. Profile & Perspective"
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      Main Headline
-                    </label>
-                    <input
-                      type="text"
-                      value={site.about?.headline || ""}
-                      onChange={(e) => updateSiteAbout("headline", e.target.value)}
-                      placeholder="e.g. Designing with aesthetic authority & manufacturing rigor."
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413] font-editorial text-xl"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      Subheading / Philosophy Italics
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={site.about?.subheading || ""}
-                      onChange={(e) => updateSiteAbout("subheading", e.target.value)}
-                      placeholder="e.g. Bridging the gap between zero-to-one brand storytelling and physical manufacturing."
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-serif italic text-[#141413]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Story Paragraphs */}
-              <div className="space-y-4 p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                      Biography Story Paragraphs
-                    </h4>
-                    <p className="text-xs text-[#64625C]">
-                      Rendered sequentially in the main editorial column on /about.
-                    </p>
-                  </div>
-                  <button
-                    onClick={addAboutStoryParagraph}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Paragraph</span>
-                  </button>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  {(site.about?.storyParagraphs || []).map((paragraph, index) => (
-                    <div key={index} className="flex gap-3 items-start">
-                      <span className="font-mono text-xs font-bold text-[#8A8881] pt-3 shrink-0 w-6">
-                        0{index + 1}
-                      </span>
-                      <textarea
-                        rows={3}
-                        value={paragraph}
-                        onChange={(e) => updateAboutStoryParagraph(index, e.target.value)}
-                        className="flex-1 px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs sm:text-sm text-[#141413] leading-relaxed"
-                      />
-                      <button
-                        onClick={() => removeAboutStoryParagraph(index)}
-                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer shrink-0 mt-1"
-                        title="Delete paragraph"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Status Box & Resume Links */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3">
-                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                    Current Status Box
-                  </h4>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={site.about?.statusBoxTitle || ""}
-                      onChange={(e) => updateSiteAbout("statusBoxTitle", e.target.value)}
-                      placeholder="Title (e.g. Current Status)"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
-                    />
-                    <textarea
-                      rows={3}
-                      value={site.about?.statusBoxText || ""}
-                      onChange={(e) => updateSiteAbout("statusBoxText", e.target.value)}
-                      placeholder="e.g. Accepting select brand identity engagements for Q3/Q4."
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3">
-                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                    Resume &amp; Contact CTAs
-                  </h4>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={site.about?.resumeButtonText || ""}
-                      onChange={(e) => updateSiteAbout("resumeButtonText", e.target.value)}
-                      placeholder="CV Button Label"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                    />
-                    <input
-                      type="text"
-                      value={site.about?.resumeUrl || ""}
-                      onChange={(e) => updateSiteAbout("resumeUrl", e.target.value)}
-                      placeholder="CV Download URL or File Link"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
-                    />
-                    <input
-                      type="text"
-                      value={site.about?.contactButtonText || ""}
-                      onChange={(e) => updateSiteAbout("contactButtonText", e.target.value)}
-                      placeholder="Contact Button Label"
-                      className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Toolchain & Software Fluency */}
-              <div className="space-y-4 p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                      Software &amp; Toolchain Fluency
-                    </h4>
-                    <p className="text-xs text-[#64625C]">
-                      Manage tools, software, and your specific roles shown on the About page.
-                    </p>
-                  </div>
-                  <button
-                    onClick={addAboutTool}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Tool</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  {(site.about?.toolchain || []).map((tool, index) => (
-                    <div
-                      key={index}
-                      className="p-3.5 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] flex items-center justify-between gap-3 shadow-2xs"
-                    >
-                      <div className="flex-1 space-y-1">
-                        <input
-                          type="text"
-                          value={tool.name}
-                          onChange={(e) => updateAboutTool(index, "name", e.target.value)}
-                          placeholder="Tool Name"
-                          className="w-full font-mono text-xs font-bold text-[#141413] bg-transparent border-b border-transparent focus:border-[#141413] outline-none"
-                        />
-                        <input
-                          type="text"
-                          value={tool.role}
-                          onChange={(e) => updateAboutTool(index, "role", e.target.value)}
-                          placeholder="Application / Role"
-                          className="w-full text-xs text-[#5A5852] bg-transparent border-b border-transparent focus:border-[#141413] outline-none"
-                        />
-                      </div>
-                      <button
-                        onClick={() => removeAboutTool(index)}
-                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete tool"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* 3. WORK SECTION OVERVIEW */}
-          {/* ========================================================= */}
-          {activeTab === "work-overview" && (
-            <div className="space-y-8">
-              <div className="border-b border-[#E5E2DA] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#8A8881]">
-                    <span className="px-2 py-0.5 rounded bg-[#EAE7DF] text-[#64625C]">Anchor: /#work</span>
-                    <span>·</span>
-                    <span>PORTFOLIO SHOWCASE CATALOG</span>
-                  </div>
-                  <h2 className="font-editorial text-3xl sm:text-4xl text-[#141413]">
-                    Work Section &amp; Case Studies
-                  </h2>
-                  <p className="text-xs text-[#64625C] pt-1">
-                    Manage the work section titles, intro narrative, and the catalog of published case study pages.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={addNewProject}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add New Case Study</span>
-                  </button>
-                  <Link
-                    href="/#work"
-                    target="_blank"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-mono uppercase bg-[#FAF9F5] border border-[#D5D1C7] hover:bg-[#EAE7DF] transition-colors"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>View Section</span>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Work Section Intro */}
-              <div className="space-y-4 p-6 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA]">
-                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                  Work Section Heading &amp; Narrative
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      Section Kicker Badge
-                    </label>
-                    <input
-                      type="text"
-                      value={site.workSection?.kicker || ""}
-                      onChange={(e) => updateSiteWorkSection("kicker", e.target.value)}
-                      placeholder="e.g. Core Curated Portfolio"
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      Section Main Title
-                    </label>
-                    <input
-                      type="text"
-                      value={site.workSection?.title || ""}
-                      onChange={(e) => updateSiteWorkSection("title", e.target.value)}
-                      placeholder="e.g. The Four Pillars"
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                    Section Subtitle / Description
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={site.workSection?.description || ""}
-                    onChange={(e) => updateSiteWorkSection("description", e.target.value)}
-                    placeholder="Short description of the curated case studies..."
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-              </div>
-
-              {/* Published Case Studies Catalog */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                    Published Case Studies ({projects.length})
-                  </h4>
-                  <span className="text-xs text-[#8A8881]">
-                    Click any item to edit its complete page content &amp; video
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  {projects.map((p, index) => (
-                    <div
-                      key={p.slug}
-                      className="p-5 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[#D5D1C7]"
-                    >
-                      <div className="flex items-center gap-4">
-                        <span className="font-mono text-lg font-bold text-[#8A8881] w-8">
-                          {p.pillarNumber || `0${index + 1}`}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-editorial text-lg text-[#141413]">{p.title}</h3>
-                            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#EAE7DF] text-[#64625C]">
-                              {p.status || "Live"}
-                            </span>
-                            {p.videoData?.url && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                                <Video className="w-3 h-3" />
-                                <span>Video</span>
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-[#64625C] line-clamp-1">{p.subtitle}</p>
-                          <span className="font-mono text-[10px] text-[#8A8881]">
-                            /work/{p.slug} · {p.client}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-end sm:self-center">
-                        <Link
-                          href={`/work/${p.slug}`}
-                          target="_blank"
-                          className="p-2 text-[#8A8881] hover:text-[#141413] transition-colors rounded-lg hover:bg-[#EAE7DF]"
-                          title="Preview Live Page"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => setActiveTab(p.slug)}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
-                        >
-                          Edit Page Content
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* 4. CASE STUDY DETAIL PAGE EDITOR (COMPLETE WITH SPECS, DELIVERABLES, SECTIONS) */}
-          {/* ========================================================= */}
-          {selectedProject && (
-            <div className="space-y-10">
-              {/* Project Header Bar */}
-              <div className="border-b border-[#E5E2DA] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div className="space-y-1">
+        {/* ========================================================= */}
+        {/* CENTER COLUMN: INTERACTIVE VISUAL CANVAS OR FORM EDITOR */}
+        {/* ========================================================= */}
+        <main
+          className={`${
+            viewMode === "visual" && selectedProject
+              ? "lg:col-span-6"
+              : "lg:col-span-9"
+          } space-y-8`}
+        >
+          {/* VISUAL BUILDER CANVAS (WEBFLOW-STYLE) */}
+          {viewMode === "visual" && selectedProject ? (
+            <div
+              className={`mx-auto transition-all ${
+                devicePreview === "mobile"
+                  ? "max-w-[420px] border-4 border-[#141413] rounded-3xl overflow-hidden shadow-2xl"
+                  : "w-full"
+              }`}
+            >
+              <div className="bg-[#FAF9F5] border border-[#E5E2DA] rounded-2xl p-6 sm:p-8 space-y-12 min-h-[700px] shadow-xs">
+                {/* Visual Header / Breadcrumb */}
+                <div className="border-b border-[#E5E2DA] pb-6 space-y-2">
                   <div className="flex items-center gap-2 text-xs font-mono text-[#8A8881]">
                     <span className="px-2 py-0.5 rounded bg-[#EAE7DF] text-[#64625C]">
                       Route: /work/{selectedProject.slug}
                     </span>
                     <span>·</span>
                     <span>PILLAR {selectedProject.pillarNumber}</span>
-                    <span>·</span>
-                    <span className="uppercase">{selectedProject.pillarTitle}</span>
                   </div>
-                  <h2 className="font-editorial text-3xl sm:text-4xl text-[#141413]">
+                  <h1 className="font-editorial text-4xl sm:text-5xl text-[#141413]">
                     {selectedProject.title}
-                  </h2>
+                  </h1>
+                  <p className="font-serif italic text-lg text-[#5A5852]">
+                    {selectedProject.subtitle}
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => deleteProject(selectedProject.slug)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors cursor-pointer"
-                    title="Delete this project"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Case Study</span>
-                  </button>
-
-                  <Link
-                    href={`/work/${selectedProject.slug}`}
-                    target="_blank"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono uppercase bg-[#FAF9F5] border border-[#D5D1C7] hover:bg-[#EAE7DF] transition-colors"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Preview Page</span>
-                  </Link>
-                </div>
-              </div>
-
-              {/* COMMERCIAL VIDEO RESULT SHOWCASE */}
-              <div className="p-6 sm:p-8 rounded-2xl bg-[#141413] text-[#FAF9F5] space-y-6 shadow-md">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Video className="w-5 h-5 text-amber-400" />
-                    <div>
-                      <h3 className="font-editorial text-2xl text-[#FAF9F5]">
-                        Commercial Video Result Showcase
-                      </h3>
-                      <p className="text-xs text-[#A8A29E]">
-                        Embed commercial campaign launch films, brand reels, or motion studies.
-                      </p>
-                    </div>
-                  </div>
-                  {selectedProject.videoData?.url && (
-                    <span className="text-[10px] font-mono uppercase px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
-                      Video Active
+                {/* Cover Image or Video Showcase */}
+                {selectedProject.videoData?.url ? (
+                  <div className="p-4 rounded-xl bg-[#141413] text-[#FAF9F5] space-y-2">
+                    <span className="text-[10px] font-mono text-amber-400 uppercase">
+                      Commercial Motion Result
                     </span>
-                  )}
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#A8A29E]">
-                      Video URL (Vimeo, YouTube, or direct .mp4)
-                    </label>
-                    <input
-                      type="url"
-                      value={selectedProject.videoData?.url || ""}
-                      onChange={(e) =>
-                        updateProjectVideo(selectedProject.slug, "url", e.target.value)
-                      }
-                      placeholder="e.g. https://vimeo.com/76979871 or https://.../video.mp4"
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#24221F] border border-[#3E3A34] text-xs font-mono text-[#FAF9F5] focus:outline-none focus:border-amber-400"
-                    />
-                    <p className="text-[11px] text-[#A8A29E]">
-                      Tip: Vimeo links provide the cleanest unbranded cinematic player for client showcases.
-                    </p>
+                    <p className="text-xs font-mono">{selectedProject.videoData.url}</p>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase tracking-wider text-[#A8A29E]">
-                        Video Caption / Director Credits
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedProject.videoData?.caption || ""}
-                        onChange={(e) =>
-                          updateProjectVideo(selectedProject.slug, "caption", e.target.value)
-                        }
-                        placeholder="e.g. 60-second broadcast commercial spot & digital campaign"
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#24221F] border border-[#3E3A34] text-xs text-[#FAF9F5]"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase tracking-wider text-[#A8A29E]">
-                        Poster Image Path (Fallback)
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedProject.videoData?.poster || ""}
-                        onChange={(e) =>
-                          updateProjectVideo(selectedProject.slug, "poster", e.target.value)
-                        }
-                        placeholder="/images/poster.jpg or https://..."
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#24221F] border border-[#3E3A34] text-xs font-mono text-[#FAF9F5]"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION A: Title, Subtitle, and Metadata */}
-              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
-                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                  1. Core Metadata &amp; Cover
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      Case Study Title
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProject.title}
-                      onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "title", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
+                ) : (
+                  <div className="relative aspect-16/9 w-full rounded-xl overflow-hidden border border-[#E5E2DA]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={selectedProject.coverImage}
+                      alt={selectedProject.title}
+                      className="w-full h-full object-cover"
                     />
                   </div>
+                )}
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      URL Slug (Route Path)
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProject.slug}
-                      onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "slug", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
-                    />
-                  </div>
+                {/* MODULAR SECTION BLOCKS CANVAS */}
+                <div className="space-y-8">
+                  {(selectedProject.sections || []).map((sec, idx) => {
+                    const isSelected = selectedSectionIdx === idx;
+                    const hasBgImage = sec.background?.type === "image" && sec.background.imageUrl;
+                    const hasBgColor = sec.background?.type === "color" && sec.background.color;
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      Pillar Number (e.g. 01, 02, 03, 04)
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProject.pillarNumber}
-                      onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "pillarNumber", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      Pillar Category Title
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProject.pillarTitle}
-                      onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "pillarTitle", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      Client / Partner
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProject.client}
-                      onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "client", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      Year &amp; Role
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        value={selectedProject.year}
-                        onChange={(e) =>
-                          updateProjectField(selectedProject.slug, "year", e.target.value)
-                        }
-                        placeholder="Year"
-                        className="w-full px-3 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
-                      />
-                      <input
-                        type="text"
-                        value={selectedProject.role}
-                        onChange={(e) =>
-                          updateProjectField(selectedProject.slug, "role", e.target.value)
-                        }
-                        placeholder="Role"
-                        className="w-full px-3 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      Subtitle / Value Proposition
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProject.subtitle}
-                      onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "subtitle", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                    />
-                  </div>
-
-                  <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                      Cover Image URL / Path
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProject.coverImage}
-                      onChange={(e) =>
-                        updateProjectField(selectedProject.slug, "coverImage", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-mono text-[#141413]"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Executive Summary Paragraph
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={selectedProject.summary}
-                    onChange={(e) =>
-                      updateProjectField(selectedProject.slug, "summary", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413] leading-relaxed"
-                  />
-                </div>
-              </div>
-
-              {/* SECTION B: KEY METRICS CARDS */}
-              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                      2. Key Metrics &amp; Impact Cards
-                    </h4>
-                    <p className="text-xs text-[#64625C]">
-                      Displayed as bold impact cards directly under the metadata bar.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => addProjectMetric(selectedProject.slug)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Metric</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  {(selectedProject.metrics || []).map((metric, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] space-y-2 relative group"
-                    >
-                      <button
-                        onClick={() => removeProjectMetric(selectedProject.slug, idx)}
-                        className="absolute top-2 right-2 p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer"
-                        title="Delete Metric"
+                    return (
+                      <div
+                        key={sec.id || idx}
+                        onClick={() => setSelectedSectionIdx(idx)}
+                        className={`group relative rounded-2xl p-6 transition-all cursor-pointer ${
+                          isSelected
+                            ? "ring-2 ring-[#141413] shadow-lg bg-white"
+                            : "hover:ring-1 hover:ring-[#8A8881] bg-[#FAF9F5] border border-[#E5E2DA]"
+                        }`}
+                        style={{
+                          backgroundColor: hasBgColor ? sec.background?.color : undefined,
+                        }}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                          Metric Label
-                        </label>
-                        <input
-                          type="text"
-                          value={metric.label}
-                          onChange={(e) =>
-                            updateProjectMetric(selectedProject.slug, idx, "label", e.target.value)
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#8A8881]"
-                          placeholder="e.g. Core SKUs Launched"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                          Metric Value
-                        </label>
-                        <input
-                          type="text"
-                          value={metric.value}
-                          onChange={(e) =>
-                            updateProjectMetric(selectedProject.slug, idx, "value", e.target.value)
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-editorial text-[#141413] font-bold"
-                          placeholder="e.g. 5 Formulations"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SECTION C: Strategic Overview (Challenge, Solution, Outcome) */}
-              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
-                <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                  3. Case Study Narrative (Context &amp; Strategy)
-                </h4>
-
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      The Challenge
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={selectedProject.overview.challenge}
-                      onChange={(e) =>
-                        updateProjectOverview(selectedProject.slug, "challenge", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      The Strategic Solution
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={selectedProject.overview.strategicSolution}
-                      onChange={(e) =>
-                        updateProjectOverview(
-                          selectedProject.slug,
-                          "strategicSolution",
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                      The Outcome
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={selectedProject.overview.outcome}
-                      onChange={(e) =>
-                        updateProjectOverview(selectedProject.slug, "outcome", e.target.value)
-                      }
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413] leading-relaxed"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION D: SCOPE OF WORK / DELIVERED OUTPUTS (SCREENSHOT 1) */}
-              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
-                      Scope of Work
-                    </span>
-                    <h4 className="font-editorial text-2xl text-[#141413]">
-                      4. Delivered Outputs Checklist
-                    </h4>
-                    <p className="text-xs text-[#64625C] pt-0.5">
-                      The list of outputs shown with checkmarks on the live case study.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => addProjectDeliverable(selectedProject.slug)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Output</span>
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 pt-2">
-                  {(selectedProject.deliverables || []).map((del, dIdx) => (
-                    <div
-                      key={dIdx}
-                      className="flex items-center gap-3 p-2.5 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] hover:border-[#C5C0B3] transition-colors"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 ml-1" />
-                      <input
-                        type="text"
-                        value={del}
-                        onChange={(e) =>
-                          updateProjectDeliverable(selectedProject.slug, dIdx, e.target.value)
-                        }
-                        placeholder="e.g. Full Zero-to-One Visual Identity"
-                        className="flex-1 px-2 py-1 text-xs font-medium text-[#141413] bg-transparent outline-none"
-                      />
-                      <button
-                        onClick={() => removeProjectDeliverable(selectedProject.slug, dIdx)}
-                        className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer shrink-0"
-                        title="Delete output"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SECTION E: TECHNICAL STANDARDS / PRODUCTION & SYSTEM SPECS (SCREENSHOT 1) */}
-              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
-                      Technical Standards
-                    </span>
-                    <h4 className="font-editorial text-2xl text-[#141413]">
-                      5. Production &amp; System Specs
-                    </h4>
-                    <p className="text-xs text-[#64625C] pt-0.5">
-                      Key-value spec cards (Typography, Color Palette, Substrates, Secondary Packaging).
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => addProjectSpec(selectedProject.slug)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Spec</span>
-                  </button>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  {Object.entries(selectedProject.specs || {}).map(([key, val], sIdx) => (
-                    <div
-                      key={sIdx}
-                      className="p-4 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] space-y-2 relative"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-1">
-                          <label className="text-[10px] font-mono uppercase text-[#8A8881] block mb-1">
-                            Spec Label / Category
-                          </label>
-                          <input
-                            type="text"
-                            value={key}
-                            onChange={(e) =>
-                              updateProjectSpecKey(selectedProject.slug, key, e.target.value)
-                            }
-                            placeholder="e.g. PRIMARY TYPOGRAPHY"
-                            className="w-full px-3 py-1.5 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono font-bold uppercase text-[#8A8881]"
-                          />
-                        </div>
-                        <button
-                          onClick={() => removeProjectSpec(selectedProject.slug, key)}
-                          className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer self-end mb-0.5"
-                          title="Delete Spec"
+                        {/* Floating Quick Action Pill */}
+                        <div
+                          className={`absolute top-3 right-3 z-30 flex items-center gap-1.5 p-1 rounded-full bg-[#141413] text-[#FAF9F5] text-xs shadow-md ${
+                            isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                          } transition-opacity`}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div>
-                        <label className="text-[10px] font-mono uppercase text-[#8A8881] block mb-1">
-                          Spec Content / Description
-                        </label>
-                        <textarea
-                          rows={2}
-                          value={val}
-                          onChange={(e) =>
-                            updateProjectSpecValue(selectedProject.slug, key, e.target.value)
-                          }
-                          placeholder="e.g. Bespoke Editorial High-Contrast Serif + Suisse Int'l Grotesk"
-                          className="w-full px-3 py-2 rounded-md bg-[#FAF9F5] border border-[#DDD9CE] text-xs sm:text-sm font-medium text-[#141413]"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SECTION F: SECTIONS & GALLERY ARCHITECTURE (SCREENSHOTS 2 & 3) */}
-              <div className="p-6 sm:p-8 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
-                      Architectural Blocks
-                    </span>
-                    <h4 className="font-editorial text-2xl sm:text-3xl text-[#141413]">
-                      6. Content Sections &amp; Gallery Cards
-                    </h4>
-                    <p className="text-xs text-[#64625C] pt-0.5">
-                      Edit the section headings, descriptions, and each individual card caption &amp; subcaption (Logotype Anatomy, Shelf Lineup, etc.).
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => addSection(selectedProject.slug)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add New Section</span>
-                  </button>
-                </div>
-
-                <div className="space-y-8 pt-4">
-                  {(selectedProject.sections || []).map((sec, secIdx) => (
-                    <div
-                      key={sec.id || secIdx}
-                      className="p-6 rounded-2xl bg-[#F4F2EC] border border-[#DDD9CE] space-y-5 shadow-xs"
-                    >
-                      {/* Section Header */}
-                      <div className="flex items-center justify-between border-b border-[#DDD9CE] pb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-full font-mono text-[10px] bg-[#141413] text-[#FAF9F5]">
-                            Section 0{secIdx + 1}
+                          <span className="px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-amber-300">
+                            {sec.type}
                           </span>
-                          <span className="font-mono text-xs uppercase text-[#8A8881]">
-                            Type: {sec.type}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => removeSection(selectedProject.slug, secIdx)}
-                          className="inline-flex items-center gap-1 text-xs font-mono text-rose-600 hover:text-rose-800 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Remove Section</span>
-                        </button>
-                      </div>
-
-                      {/* Section Kicker, Title, Description */}
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
-                              Section Kicker Badge (e.g. SYSTEM FOUNDATIONS / RETAIL IMPACT)
-                            </label>
-                            <input
-                              type="text"
-                              value={sec.kicker || ""}
-                              onChange={(e) =>
-                                updateSectionField(
-                                  selectedProject.slug,
-                                  secIdx,
-                                  "kicker",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="e.g. SYSTEM FOUNDATIONS"
-                              className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono uppercase text-[#141413]"
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
-                              Section Title
-                            </label>
-                            <input
-                              type="text"
-                              value={sec.title}
-                              onChange={(e) =>
-                                updateSectionField(
-                                  selectedProject.slug,
-                                  secIdx,
-                                  "title",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="e.g. The Zero-to-One System Architecture"
-                              className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-editorial text-[#141413]"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
-                            Section Description Narrative
-                          </label>
-                          <textarea
-                            rows={3}
-                            value={sec.description}
-                            onChange={(e) =>
-                              updateSectionField(
-                                selectedProject.slug,
-                                secIdx,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Detailed description of this section..."
-                            className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs sm:text-sm text-[#141413] leading-relaxed"
-                          />
-                        </div>
-                      </div>
-
-                      {/* SECTION ITEMS (GALLERY CARDS - SCREENSHOTS 2 & 3) */}
-                      {(sec.type === "gallery" || sec.type === "editorial") && (
-                        <div className="space-y-3 pt-3 border-t border-[#DDD9CE]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                              Visual Cards &amp; Captions ({(sec.items || []).length})
-                            </span>
-                            <button
-                              onClick={() => addSectionItem(selectedProject.slug, secIdx)}
-                              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono bg-[#FAF9F5] border border-[#DDD9CE] hover:bg-[#EAE7DF] text-[#141413] cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" />
-                              <span>Add Card</span>
-                            </button>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                            {(sec.items || []).map((item, itemIdx) => (
-                              <div
-                                key={itemIdx}
-                                className="p-4 rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] space-y-3 relative shadow-2xs"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span className="font-mono text-[10px] text-[#8A8881] font-bold">
-                                    Card 0{itemIdx + 1}
-                                  </span>
-                                  <button
-                                    onClick={() =>
-                                      removeSectionItem(selectedProject.slug, secIdx, itemIdx)
-                                    }
-                                    className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer"
-                                    title="Delete Card"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-
-                                <div className="space-y-1">
-                                  <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                    Card Caption / Title
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={item.caption}
-                                    onChange={(e) =>
-                                      updateSectionItem(
-                                        selectedProject.slug,
-                                        secIdx,
-                                        itemIdx,
-                                        "caption",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="e.g. Logotype Anatomy & Kerning Matrix"
-                                    className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-editorial font-bold text-[#141413]"
-                                  />
-                                </div>
-
-                                <div className="space-y-1">
-                                  <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                    Card Subcaption / Description
-                                  </label>
-                                  <textarea
-                                    rows={2}
-                                    value={item.subcaption || ""}
-                                    onChange={(e) =>
-                                      updateSectionItem(
-                                        selectedProject.slug,
-                                        secIdx,
-                                        itemIdx,
-                                        "subcaption",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="e.g. Drawn with bespoke ligature transitions..."
-                                    className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#5A5852] leading-relaxed"
-                                  />
-                                </div>
-
-                                <div className="space-y-1">
-                                  <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                    Custom Image URL (Optional, defaults to cover)
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={item.image || ""}
-                                    onChange={(e) =>
-                                      updateSectionItem(
-                                        selectedProject.slug,
-                                        secIdx,
-                                        itemIdx,
-                                        "image",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="/placeholder-nidhi-hero.svg"
-                                    className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-[11px] font-mono text-[#141413]"
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* DIELINE SECTION PARAMETERS */}
-                      {sec.type === "dieline" && sec.dielineData && (
-                        <div className="space-y-3 pt-3 border-t border-[#DDD9CE]">
-                          <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413] block">
-                            Dieline Inspector Parameters
-                          </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                Substrate
-                              </label>
-                              <input
-                                type="text"
-                                value={sec.dielineData.substrate}
-                                onChange={(e) =>
-                                  updateSectionDieline(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "substrate",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                Dimensions
-                              </label>
-                              <input
-                                type="text"
-                                value={sec.dielineData.dimensions}
-                                onChange={(e) =>
-                                  updateSectionDieline(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "dimensions",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                Bleed
-                              </label>
-                              <input
-                                type="text"
-                                value={sec.dielineData.bleed}
-                                onChange={(e) =>
-                                  updateSectionDieline(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "bleed",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                Crease Guide
-                              </label>
-                              <input
-                                type="text"
-                                value={sec.dielineData.creaseGuide}
-                                onChange={(e) =>
-                                  updateSectionDieline(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "creaseGuide",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* COMPARISON SECTION PARAMETERS */}
-                      {sec.type === "comparison" && sec.comparisonData && (
-                        <div className="space-y-3 pt-3 border-t border-[#DDD9CE]">
-                          <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413] block">
-                            Comparison Slider Labels &amp; Descriptions
-                          </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                Before Label
-                              </label>
-                              <input
-                                type="text"
-                                value={sec.comparisonData.beforeLabel}
-                                onChange={(e) =>
-                                  updateSectionComparison(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "beforeLabel",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                After Label
-                              </label>
-                              <input
-                                type="text"
-                                value={sec.comparisonData.afterLabel}
-                                onChange={(e) =>
-                                  updateSectionComparison(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "afterLabel",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                            <div className="space-y-1 sm:col-span-2">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                Before Description
-                              </label>
-                              <textarea
-                                rows={2}
-                                value={sec.comparisonData.beforeDescription}
-                                onChange={(e) =>
-                                  updateSectionComparison(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "beforeDescription",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                            <div className="space-y-1 sm:col-span-2">
-                              <label className="text-[10px] font-mono uppercase text-[#8A8881]">
-                                After Description
-                              </label>
-                              <textarea
-                                rows={2}
-                                value={sec.comparisonData.afterDescription}
-                                onChange={(e) =>
-                                  updateSectionComparison(
-                                    selectedProject.slug,
-                                    secIdx,
-                                    "afterDescription",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs text-[#141413]"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* 5. NAVIGATION BAR & MENU */}
-          {/* ========================================================= */}
-          {activeTab === "navigation" && (
-            <div className="space-y-8">
-              <div className="border-b border-[#E5E2DA] pb-6 space-y-1">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                  Header &amp; Navigation Settings
-                </span>
-                <h2 className="font-editorial text-3xl text-[#141413]">
-                  Navbar Page Tabs
-                </h2>
-                <p className="text-xs text-[#64625C] pt-1">
-                  Add, remove, rename, or reorder the page links that appear in your header navbar and mobile menu.
-                </p>
-              </div>
-
-              {/* Real-time Header Navbar Visual Preview */}
-              <div className="p-6 rounded-2xl bg-[#FAF9F5] border border-[#E5E2DA] space-y-3 shadow-xs">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
-                  Navbar Real-time Preview
-                </span>
-
-                <div className="p-4 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] flex items-center justify-between overflow-x-auto gap-4">
-                  <div className="flex flex-col shrink-0">
-                    <span className="font-editorial text-base text-[#141413]">
-                      {site.author}
-                    </span>
-                    <span className="text-[9px] uppercase tracking-widest text-[#8A8881]">
-                      Creative Direction
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-5 shrink-0">
-                    {(site.navLinks || []).map((link) => (
-                      <span
-                        key={link.id}
-                        className="text-xs font-medium text-[#4A4843] hover:text-black cursor-default border-b border-transparent"
-                      >
-                        {link.label}
-                      </span>
-                    ))}
-
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] uppercase font-semibold rounded-full bg-[#141413] text-[#FAF9F5]">
-                      <span>Get in Touch</span>
-                      <ArrowUpRight className="w-3 h-3" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation Links List */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
-                    Active Navbar Tabs ({(site.navLinks || []).length})
-                  </h4>
-                  <button
-                    onClick={() => addNavLink("New Page", "/#")}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#141413] text-[#FAF9F5] hover:bg-[#2C2A26] transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Page Tab</span>
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {(site.navLinks || []).map((link, index) => (
-                    <div
-                      key={link.id}
-                      className="p-4 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[#D5D1C7]"
-                    >
-                      {/* Reorder Controls & Index */}
-                      <div className="flex items-center gap-2">
-                        <div className="flex flex-col gap-0.5">
                           <button
-                            onClick={() => moveNavLink(index, "up")}
-                            disabled={index === 0}
-                            className="p-1 rounded text-[#8A8881] hover:text-[#141413] hover:bg-[#EAE7DF] disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveSection(selectedProject.slug, idx, "up");
+                            }}
+                            disabled={idx === 0}
+                            className="p-1 hover:bg-white/20 rounded-full disabled:opacity-30 cursor-pointer"
                             title="Move Up"
                           >
                             <ArrowUp className="w-3 h-3" />
                           </button>
                           <button
-                            onClick={() => moveNavLink(index, "down")}
-                            disabled={index === (site.navLinks || []).length - 1}
-                            className="p-1 rounded text-[#8A8881] hover:text-[#141413] hover:bg-[#EAE7DF] disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveSection(selectedProject.slug, idx, "down");
+                            }}
+                            disabled={idx === (selectedProject.sections || []).length - 1}
+                            className="p-1 hover:bg-white/20 rounded-full disabled:opacity-30 cursor-pointer"
                             title="Move Down"
                           >
                             <ArrowDown className="w-3 h-3" />
                           </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              duplicateSection(selectedProject.slug, idx);
+                            }}
+                            className="p-1 hover:bg-white/20 rounded-full cursor-pointer"
+                            title="Duplicate"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeSection(selectedProject.slug, idx);
+                            }}
+                            className="p-1 hover:bg-rose-600 rounded-full cursor-pointer text-rose-300 hover:text-white"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         </div>
-                        <span className="font-mono text-xs font-bold text-[#8A8881] w-6">
-                          0{index + 1}
-                        </span>
+
+                        {/* Background Image Overlay Preview */}
+                        {hasBgImage && (
+                          <div className="absolute inset-0 rounded-2xl overflow-hidden z-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={sec.background!.imageUrl!}
+                              alt="Background"
+                              className="w-full h-full object-cover"
+                            />
+                            <div
+                              className="absolute inset-0 bg-[#141413]"
+                              style={{
+                                opacity: sec.background?.overlayOpacity ?? 0.5,
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        <div className={`relative z-10 space-y-4 ${hasBgImage ? "text-[#FAF9F5]" : ""}`}>
+                          {sec.kicker && (
+                            <span
+                              className={`text-[10px] font-mono uppercase tracking-widest ${
+                                hasBgImage ? "text-amber-300" : "text-[#8A8881]"
+                              }`}
+                            >
+                              {sec.kicker}
+                            </span>
+                          )}
+                          <h3
+                            className={`font-editorial ${
+                              sec.fontSize === "7xl"
+                                ? "text-4xl sm:text-5xl"
+                                : sec.fontSize === "5xl"
+                                ? "text-3xl sm:text-4xl"
+                                : "text-2xl sm:text-3xl"
+                            } ${hasBgImage ? "text-[#FAF9F5]" : "text-[#141413]"}`}
+                          >
+                            {sec.title}
+                          </h3>
+                          <p
+                            className={`text-xs leading-relaxed ${
+                              hasBgImage ? "text-[#EAE7DF]" : "text-[#5A5852]"
+                            }`}
+                          >
+                            {sec.description}
+                          </p>
+
+                          {/* RENDER COMPONENT: CAROUSEL SLIDER */}
+                          {sec.type === "carousel" && sec.items && (
+                            <div className="pt-2">
+                              <CarouselSlider
+                                items={sec.items}
+                                fallbackImage={selectedProject.coverImage}
+                                settings={sec.carouselSettings}
+                              />
+                            </div>
+                          )}
+
+                          {/* RENDER COMPONENT: COMPARISON SLIDER */}
+                          {sec.type === "comparison" && sec.comparisonData && (
+                            <div className="pt-2">
+                              <ComparisonSlider
+                                beforeLabel={sec.comparisonData.beforeLabel}
+                                afterLabel={sec.comparisonData.afterLabel}
+                                beforeImage={sec.comparisonData.beforeImage}
+                                afterImage={sec.comparisonData.afterImage}
+                                beforeDescription={sec.comparisonData.beforeDescription}
+                                afterDescription={sec.comparisonData.afterDescription}
+                              />
+                            </div>
+                          )}
+
+                          {/* RENDER COMPONENT: 2-COL GALLERY */}
+                          {(sec.type === "gallery" || sec.type === "editorial") && sec.items && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                              {sec.items.map((item, itemIdx) => (
+                                <div
+                                  key={itemIdx}
+                                  className="p-3 rounded-xl bg-white border border-[#E5E2DA] space-y-2 shadow-2xs"
+                                >
+                                  <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-[#F2EFE9]">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={item.image || selectedProject.coverImage}
+                                      alt={item.caption}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <h4 className="font-editorial text-sm font-bold text-[#141413]">
+                                    {item.caption}
+                                  </h4>
+                                  {item.subcaption && (
+                                    <p className="text-[11px] text-[#5A5852] line-clamp-2">
+                                      {item.subcaption}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Inputs: Label & Path */}
-                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
-                            Tab Title / Label
-                          </label>
-                          <input
-                            type="text"
-                            value={link.label}
-                            onChange={(e) => updateNavLink(link.id, "label", e.target.value)}
-                            placeholder="e.g. Work"
-                            className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-medium text-[#141413]"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
-                            Link / Destination Path
-                          </label>
-                          <input
-                            type="text"
-                            value={link.href}
-                            onChange={(e) => updateNavLink(link.id, "href", e.target.value)}
-                            placeholder="e.g. /#work or /about"
-                            className="w-full px-3 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => removeNavLink(link.id)}
-                        className="p-2.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors self-end sm:self-center cursor-pointer"
-                        title="Remove Tab"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                {/* Quick Preset Buttons */}
-                <div className="pt-4 border-t border-[#E5E2DA] space-y-2">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881] block">
-                    Quick Preset Tabs
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: "About", href: "/about" },
-                      { label: "Services", href: "/#services" },
-                      { label: "Press", href: "/press" },
-                      { label: "Resume", href: "/about#resume" },
-                      { label: "Catalog", href: "/#catalog" },
-                    ].map((preset) => (
-                      <button
-                        key={preset.label}
-                        onClick={() => addNavLink(preset.label, preset.href)}
-                        className="px-3 py-1.5 rounded-full text-xs font-mono border border-[#DDD9CE] bg-[#FAF9F5] text-[#5A5852] hover:bg-[#EAE7DF] hover:text-[#141413] transition-colors cursor-pointer"
-                      >
-                        + Add &ldquo;{preset.label}&rdquo;
-                      </button>
-                    ))}
-                  </div>
+                {/* Bottom Insert Section Button */}
+                <div className="pt-4 text-center">
+                  <button
+                    onClick={() => setShowTemplateModal(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#141413] text-[#FAF9F5] text-xs font-semibold uppercase tracking-wider hover:bg-[#2C2A26] transition-all cursor-pointer shadow-sm hover:scale-102"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Insert New Section Block</span>
+                  </button>
                 </div>
               </div>
             </div>
-          )}
+          ) : (
+            /* STRUCTURED FORM EDITOR (EXISTING FALLBACK) */
+            <div className="bg-[#F4F2EC] border border-[#E5E2DA] rounded-2xl p-6 sm:p-10 space-y-10">
+              {activeTab === "home" && (
+                <div className="space-y-6">
+                  <h2 className="font-editorial text-3xl text-[#141413]">Home Page Editor</h2>
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      value={site.hero?.headlinePrefix || ""}
+                      onChange={(e) => updateSiteHero("headlinePrefix", e.target.value)}
+                      placeholder="Headline Prefix"
+                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={site.hero?.headlineItalic || ""}
+                      onChange={(e) => updateSiteHero("headlineItalic", e.target.value)}
+                      placeholder="Headline Italic"
+                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-serif italic"
+                    />
+                    <textarea
+                      rows={4}
+                      value={site.hero?.subheadline || ""}
+                      onChange={(e) => updateSiteHero("subheadline", e.target.value)}
+                      placeholder="Subheadline"
+                      className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm"
+                    />
+                  </div>
+                </div>
+              )}
 
-          {/* ========================================================= */}
-          {/* 6. GLOBAL PROFILE SETTINGS */}
-          {/* ========================================================= */}
-          {activeTab === "site" && (
-            <div className="space-y-8">
-              <div className="border-b border-[#E5E2DA] pb-6 space-y-1">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#8A8881]">
-                  Global Profile Settings
-                </span>
-                <h2 className="font-editorial text-3xl text-[#141413]">
-                  Author, Bio &amp; Inquiries
-                </h2>
-              </div>
+              {activeTab === "about" && (
+                <div className="space-y-6">
+                  <h2 className="font-editorial text-3xl text-[#141413]">About Page Editor</h2>
+                  <input
+                    type="text"
+                    value={site.about?.headline || ""}
+                    onChange={(e) => updateSiteAbout("headline", e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm"
+                  />
+                  <textarea
+                    rows={3}
+                    value={site.about?.subheading || ""}
+                    onChange={(e) => updateSiteAbout("subheading", e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm"
+                  />
+                </div>
+              )}
 
-              {/* Availability Toggle */}
-              <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#E5E2DA] flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-mono uppercase tracking-wider font-bold text-[#141413]">
-                    Availability Indicator
-                  </h4>
-                  <p className="text-xs text-[#64625C] pt-0.5">
-                    Displays your live client availability status pill in the header.
+              {selectedProject && (
+                <div className="space-y-6">
+                  <h2 className="font-editorial text-3xl text-[#141413]">{selectedProject.title}</h2>
+                  <p className="text-xs text-[#5A5852]">
+                    Switch to &ldquo;Visual Builder&rdquo; in the top bar for live Webflow-style editing.
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={site.availabilityText}
-                    onChange={(e) => setSite({ ...site, availabilityText: e.target.value })}
-                    className="px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
-                  />
-                  <input
-                    type="checkbox"
-                    checked={site.availableForProjects}
-                    onChange={(e) =>
-                      setSite({ ...site, availableForProjects: e.target.checked })
-                    }
-                    className="w-5 h-5 accent-[#141413] cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Bio & Contact Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    value={site.author}
-                    onChange={(e) => setSite({ ...site, author: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Discipline / Role
-                  </label>
-                  <input
-                    type="text"
-                    value={site.role}
-                    onChange={(e) => setSite({ ...site, role: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Direct Contact Email
-                  </label>
-                  <input
-                    type="email"
-                    value={site.email}
-                    onChange={(e) => setSite({ ...site, email: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                    Location / Working Basis
-                  </label>
-                  <input
-                    type="text"
-                    value={site.location}
-                    onChange={(e) => setSite({ ...site, location: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413]"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-mono uppercase tracking-wider text-[#8A8881]">
-                  Editorial Positioning Bio
-                </label>
-                <textarea
-                  rows={4}
-                  value={site.shortBio}
-                  onChange={(e) => setSite({ ...site, shortBio: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm text-[#141413] leading-relaxed"
-                />
-              </div>
+              )}
             </div>
           )}
         </main>
+
+        {/* ========================================================= */}
+        {/* RIGHT COLUMN: CONTEXTUAL INSPECTOR PANEL (WEBFLOW-STYLE) */}
+        {/* ========================================================= */}
+        {viewMode === "visual" && selectedProject && (
+          <aside className="lg:col-span-3 space-y-6">
+            <div className="bg-[#FAF9F5] border border-[#E5E2DA] rounded-2xl p-5 space-y-6 sticky top-24 shadow-xs">
+              <div className="flex items-center justify-between border-b border-[#E5E2DA] pb-3">
+                <div className="flex items-center gap-2">
+                  <Settings2 className="w-4 h-4 text-[#141413]" />
+                  <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#141413]">
+                    Section Inspector
+                  </span>
+                </div>
+                {activeSection && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase bg-[#141413] text-[#FAF9F5]">
+                    {activeSection.type}
+                  </span>
+                )}
+              </div>
+
+              {activeSection && selectedSectionIdx !== null ? (
+                <div className="space-y-6">
+                  {/* 1. LAYOUT / VARIANT SWITCHER */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Component Layout Variant
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#EAE7DF]">
+                      <button
+                        onClick={() =>
+                          updateSectionField(selectedProject.slug, selectedSectionIdx, "type", "gallery")
+                        }
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                          activeSection.type === "gallery"
+                            ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
+                            : "text-[#5A5852] hover:text-[#141413]"
+                        }`}
+                      >
+                        2-Col Grid
+                      </button>
+                      <button
+                        onClick={() =>
+                          updateSectionField(selectedProject.slug, selectedSectionIdx, "type", "carousel")
+                        }
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                          activeSection.type === "carousel"
+                            ? "bg-[#141413] text-[#FAF9F5] shadow-xs"
+                            : "text-[#5A5852] hover:text-[#141413]"
+                        }`}
+                      >
+                        Carousel Slider
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 2. TYPOGRAPHY SIZE PRESETS */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Headline Font Size Scale
+                    </label>
+                    <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-[#EAE7DF]">
+                      {[
+                        { label: "7XL", val: "7xl" },
+                        { label: "5XL", val: "5xl" },
+                        { label: "3XL", val: "3xl" },
+                        { label: "XL", val: "xl" },
+                      ].map((size) => (
+                        <button
+                          key={size.val}
+                          onClick={() =>
+                            updateSectionField(
+                              selectedProject.slug,
+                              selectedSectionIdx,
+                              "fontSize",
+                              size.val
+                            )
+                          }
+                          className={`py-1 rounded-md text-xs font-mono transition-all cursor-pointer ${
+                            (activeSection.fontSize || "3xl") === size.val
+                              ? "bg-[#141413] text-[#FAF9F5] font-bold"
+                              : "text-[#5A5852] hover:text-[#141413]"
+                          }`}
+                        >
+                          {size.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3. SECTION PADDING / SPACING */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Section Padding / Spacing
+                    </label>
+                    <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#EAE7DF]">
+                      {[
+                        { label: "Compact", val: "compact" },
+                        { label: "Normal", val: "normal" },
+                        { label: "Generous", val: "generous" },
+                      ].map((space) => (
+                        <button
+                          key={space.val}
+                          onClick={() =>
+                            updateSectionField(
+                              selectedProject.slug,
+                              selectedSectionIdx,
+                              "spacing",
+                              space.val
+                            )
+                          }
+                          className={`py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                            (activeSection.spacing || "normal") === space.val
+                              ? "bg-[#141413] text-[#FAF9F5]"
+                              : "text-[#5A5852] hover:text-[#141413]"
+                          }`}
+                        >
+                          {space.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 4. BACKGROUND STYLING (COLOR VS IMAGE) */}
+                  <div className="space-y-3 pt-2 border-t border-[#E5E2DA]">
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Background Styling
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#EAE7DF]">
+                      <button
+                        onClick={() =>
+                          updateSectionBackground(selectedProject.slug, selectedSectionIdx, "type", "color")
+                        }
+                        className={`py-1 text-xs font-medium rounded-lg cursor-pointer ${
+                          activeSection.background?.type !== "image"
+                            ? "bg-[#141413] text-[#FAF9F5]"
+                            : "text-[#5A5852]"
+                        }`}
+                      >
+                        Solid Color
+                      </button>
+                      <button
+                        onClick={() =>
+                          updateSectionBackground(selectedProject.slug, selectedSectionIdx, "type", "image")
+                        }
+                        className={`py-1 text-xs font-medium rounded-lg cursor-pointer ${
+                          activeSection.background?.type === "image"
+                            ? "bg-[#141413] text-[#FAF9F5]"
+                            : "text-[#5A5852]"
+                        }`}
+                      >
+                        Image &amp; Overlay
+                      </button>
+                    </div>
+
+                    {activeSection.background?.type === "image" ? (
+                      <div className="space-y-2 pt-1">
+                        <input
+                          type="text"
+                          value={activeSection.background?.imageUrl || ""}
+                          onChange={(e) =>
+                            updateSectionBackground(
+                              selectedProject.slug,
+                              selectedSectionIdx,
+                              "imageUrl",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Image URL (e.g. https://...)"
+                          className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono text-[#141413]"
+                        />
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[10px] font-mono text-[#8A8881]">
+                            <span>Dark Overlay Opacity</span>
+                            <span>{Math.round((activeSection.background?.overlayOpacity ?? 0.5) * 100)}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={activeSection.background?.overlayOpacity ?? 0.5}
+                            onChange={(e) =>
+                              updateSectionBackground(
+                                selectedProject.slug,
+                                selectedSectionIdx,
+                                "overlayOpacity",
+                                parseFloat(e.target.value)
+                              )
+                            }
+                            className="w-full accent-[#141413] cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2 pt-1">
+                        {[
+                          { name: "Alabaster", hex: "#FAF9F5" },
+                          { name: "Stone", hex: "#F4F2EC" },
+                          { name: "Obsidian", hex: "#141413" },
+                        ].map((swatch) => (
+                          <button
+                            key={swatch.hex}
+                            onClick={() =>
+                              updateSectionBackground(
+                                selectedProject.slug,
+                                selectedSectionIdx,
+                                "color",
+                                swatch.hex
+                              )
+                            }
+                            className={`flex-1 py-1.5 rounded-lg text-[10px] font-mono border transition-all cursor-pointer ${
+                              (activeSection.background?.color || "#FAF9F5") === swatch.hex
+                                ? "ring-2 ring-black font-bold"
+                                : "border-[#DDD9CE]"
+                            }`}
+                            style={{
+                              backgroundColor: swatch.hex,
+                              color: swatch.hex === "#141413" ? "#FAF9F5" : "#141413",
+                            }}
+                          >
+                            {swatch.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 5. CAROUSEL SETTINGS (IF ACTIVE) */}
+                  {activeSection.type === "carousel" && (
+                    <div className="space-y-3 pt-2 border-t border-[#E5E2DA]">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                        Carousel Controls
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-center justify-between text-xs text-[#141413] cursor-pointer">
+                          <span>Autoplay Carousel</span>
+                          <input
+                            type="checkbox"
+                            checked={activeSection.carouselSettings?.autoplay ?? false}
+                            onChange={(e) =>
+                              updateSectionCarouselSettings(
+                                selectedProject.slug,
+                                selectedSectionIdx,
+                                "autoplay",
+                                e.target.checked
+                              )
+                            }
+                            className="accent-[#141413] cursor-pointer"
+                          />
+                        </label>
+                        <label className="flex items-center justify-between text-xs text-[#141413] cursor-pointer">
+                          <span>Show Navigation Arrows</span>
+                          <input
+                            type="checkbox"
+                            checked={activeSection.carouselSettings?.showArrows ?? true}
+                            onChange={(e) =>
+                              updateSectionCarouselSettings(
+                                selectedProject.slug,
+                                selectedSectionIdx,
+                                "showArrows",
+                                e.target.checked
+                              )
+                            }
+                            className="accent-[#141413] cursor-pointer"
+                          />
+                        </label>
+                        <label className="flex items-center justify-between text-xs text-[#141413] cursor-pointer">
+                          <span>Show Indicator Dots</span>
+                          <input
+                            type="checkbox"
+                            checked={activeSection.carouselSettings?.showDots ?? true}
+                            onChange={(e) =>
+                              updateSectionCarouselSettings(
+                                selectedProject.slug,
+                                selectedSectionIdx,
+                                "showDots",
+                                e.target.checked
+                              )
+                            }
+                            className="accent-[#141413] cursor-pointer"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 6. DIRECT CONTENT EDITING */}
+                  <div className="space-y-3 pt-2 border-t border-[#E5E2DA]">
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881] block">
+                      Content Copywriting
+                    </label>
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={activeSection.kicker || ""}
+                        onChange={(e) =>
+                          updateSectionField(
+                            selectedProject.slug,
+                            selectedSectionIdx,
+                            "kicker",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Kicker Badge"
+                        className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs font-mono uppercase"
+                      />
+                      <input
+                        type="text"
+                        value={activeSection.title}
+                        onChange={(e) =>
+                          updateSectionField(
+                            selectedProject.slug,
+                            selectedSectionIdx,
+                            "title",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Section Title"
+                        className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-sm font-editorial font-bold"
+                      />
+                      <textarea
+                        rows={3}
+                        value={activeSection.description}
+                        onChange={(e) =>
+                          updateSectionField(
+                            selectedProject.slug,
+                            selectedSectionIdx,
+                            "description",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Section Narrative Description"
+                        className="w-full px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] text-xs leading-relaxed"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 7. SLIDES / CARDS MANAGER */}
+                  <div className="space-y-3 pt-2 border-t border-[#E5E2DA]">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A8881]">
+                        Visual Slides ({(activeSection.items || []).length})
+                      </label>
+                      <button
+                        onClick={() => addSectionItem(selectedProject.slug, selectedSectionIdx)}
+                        className="text-[11px] font-mono text-[#141413] hover:underline cursor-pointer"
+                      >
+                        + Add Slide
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                      {(activeSection.items || []).map((item, itemIdx) => (
+                        <div
+                          key={itemIdx}
+                          className="p-2.5 rounded-lg bg-[#FAF9F5] border border-[#DDD9CE] space-y-1.5 relative group"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[9px] text-[#8A8881]">Slide 0{itemIdx + 1}</span>
+                            <button
+                              onClick={() =>
+                                removeSectionItem(selectedProject.slug, selectedSectionIdx, itemIdx)
+                              }
+                              className="text-rose-500 hover:text-rose-700"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={item.caption}
+                            onChange={(e) =>
+                              updateSectionItem(
+                                selectedProject.slug,
+                                selectedSectionIdx,
+                                itemIdx,
+                                "caption",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Slide Title"
+                            className="w-full text-xs font-bold bg-transparent outline-none border-b border-transparent focus:border-[#141413]"
+                          />
+                          <input
+                            type="text"
+                            value={item.subcaption || ""}
+                            onChange={(e) =>
+                              updateSectionItem(
+                                selectedProject.slug,
+                                selectedSectionIdx,
+                                itemIdx,
+                                "subcaption",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Description"
+                            className="w-full text-[11px] text-[#5A5852] bg-transparent outline-none border-b border-transparent focus:border-[#141413]"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-xs text-[#8A8881] space-y-2">
+                  <Eye className="w-5 h-5 mx-auto opacity-50" />
+                  <p>Click any section block in the center canvas to inspect and edit its style.</p>
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
       </div>
+
+      {/* INSERT SECTION BLOCK MODAL */}
+      {showTemplateModal && selectedProject && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FAF9F5] border border-[#E5E2DA] rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl animate-fadeIn">
+            <div className="flex items-center justify-between border-b border-[#E5E2DA] pb-4">
+              <div>
+                <h3 className="font-editorial text-2xl text-[#141413]">Insert Section Block</h3>
+                <p className="text-xs text-[#64625C] pt-0.5">
+                  Select an architectural template to add to &ldquo;{selectedProject.title}&rdquo;.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTemplateModal(false)}
+                className="p-1 rounded-full hover:bg-[#EAE7DF] text-[#8A8881]"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                {
+                  id: "carousel",
+                  title: "Carousel Slider",
+                  desc: "Swipeable horizontal slides with dot navigation & autoplay",
+                  icon: <ImageIcon className="w-5 h-5 text-amber-700" />,
+                },
+                {
+                  id: "gallery",
+                  title: "2-Column Gallery Grid",
+                  desc: "Classic side-by-side packaging & visual components",
+                  icon: <Layout className="w-5 h-5 text-blue-700" />,
+                },
+                {
+                  id: "comparison",
+                  title: "Comparison Slider",
+                  desc: "Interactive before/after curtain slider for retouching",
+                  icon: <Sliders className="w-5 h-5 text-emerald-700" />,
+                },
+              ].map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => addSectionWithTemplate(selectedProject.slug, template.id)}
+                  className="p-4 rounded-2xl bg-white border border-[#DDD9CE] hover:border-[#141413] hover:shadow-md text-left space-y-2 transition-all cursor-pointer group"
+                >
+                  <div className="p-2 rounded-xl bg-[#F4F2EC] w-fit group-hover:scale-110 transition-transform">
+                    {template.icon}
+                  </div>
+                  <h4 className="font-editorial text-base text-[#141413] font-bold">
+                    {template.title}
+                  </h4>
+                  <p className="text-[11px] text-[#64625C] leading-snug">{template.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

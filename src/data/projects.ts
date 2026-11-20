@@ -11,12 +11,30 @@ export interface MetricItem {
   value: string;
 }
 
+export interface SectionBackground {
+  type: "color" | "image";
+  color?: string; // e.g. "#FAF9F5", "#141413", "#F4F2EC"
+  imageUrl?: string;
+  overlayOpacity?: number; // 0 to 1
+}
+
+export interface CarouselSettings {
+  autoplay?: boolean;
+  intervalSeconds?: number;
+  showArrows?: boolean;
+  showDots?: boolean;
+}
+
 export interface ProjectSection {
   id: string;
   title: string;
   kicker?: string;
   description: string;
-  type: "gallery" | "dieline" | "comparison" | "editorial" | "quote" | "video";
+  type: "gallery" | "carousel" | "dieline" | "comparison" | "editorial" | "quote" | "video";
+  fontSize?: "7xl" | "5xl" | "3xl" | "xl";
+  spacing?: "compact" | "normal" | "generous";
+  background?: SectionBackground;
+  carouselSettings?: CarouselSettings;
   items?: {
     caption: string;
     subcaption?: string;
@@ -94,6 +112,9 @@ export interface HeroData {
   primaryButtonLink: string;
   secondaryButtonText: string;
   secondaryButtonLink: string;
+  fontSize?: "7xl" | "5xl" | "3xl";
+  spacing?: "compact" | "normal" | "generous";
+  background?: SectionBackground;
 }
 
 export interface ToolchainItem {

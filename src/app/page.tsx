@@ -24,79 +24,139 @@ export default async function HomePage() {
 
       <main className="flex-1">
         {/* HERO SECTION */}
-        <section className="relative pt-20 pb-24 md:pt-28 md:pb-32 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
-          <div className="space-y-8 max-w-5xl">
-            {/* Tag / Pre-headline */}
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#EAE7DF] border border-[#DDD9CE] text-xs font-mono tracking-wider text-[#64625C]">
-              <span className="w-2 h-2 rounded-full bg-[#141413]" />
-              <span>{site.hero?.badge || "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"}</span>
-            </div>
+        {(() => {
+          const hero = site.hero;
+          const heroPadding =
+            hero?.spacing === "compact"
+              ? "pt-14 pb-16 md:pt-20 md:pb-24"
+              : hero?.spacing === "generous"
+              ? "pt-28 pb-32 md:pt-36 md:pb-44"
+              : "pt-20 pb-24 md:pt-28 md:pb-32";
 
-            {/* Main Editorial Headline */}
-            <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-[#141413] leading-[1.04]">
-              {site.hero?.headlinePrefix || "Translating zero-to-one concepts into"}{" "}
-              <span className="font-serif italic font-normal text-[#5A5852]">
-                {site.hero?.headlineItalic || "shelf-ready systems"}
-              </span>
-              {site.hero?.headlineSuffix || ", commercial campaigns, & executive editorial."}
-            </h1>
+          const headlineClass =
+            hero?.fontSize === "7xl"
+              ? "text-5xl sm:text-6xl lg:text-7xl xl:text-8xl"
+              : hero?.fontSize === "5xl"
+              ? "text-4xl sm:text-5xl lg:text-6xl"
+              : hero?.fontSize === "3xl"
+              ? "text-3xl sm:text-4xl lg:text-5xl"
+              : "text-5xl sm:text-6xl lg:text-7xl xl:text-8xl";
 
-            {/* Sub-paragraph */}
-            <p className="text-lg sm:text-xl text-[#5A5852] max-w-3xl font-normal leading-relaxed pt-2">
-              {site.hero?.subheadline ||
-                "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications."}
-            </p>
+          const hasBgImage = hero?.background?.type === "image" && hero.background.imageUrl;
+          const hasBgColor = hero?.background?.type === "color" && hero.background.color;
 
-            {/* Quick Action Buttons & Scroll Anchor */}
-            <div className="flex flex-wrap items-center gap-4 pt-4">
-              <a
-                href={site.hero?.primaryButtonLink || "#work"}
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full bg-[#141413] text-[#FAF9F5] hover:bg-[#2D2B27] transition-colors"
-              >
-                <span>{site.hero?.primaryButtonText || "Explore Featured Work"}</span>
-                <ArrowDown className="w-3.5 h-3.5" />
-              </a>
-              <Link
-                href={site.hero?.secondaryButtonLink || "/about"}
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full border border-[#D5D1C7] text-[#141413] hover:bg-[#EAE7DF] transition-colors"
-              >
-                <span>{site.hero?.secondaryButtonText || "Read Profile & Approach"}</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
+          return (
+            <div
+              className={`relative ${heroPadding} overflow-hidden`}
+              style={{
+                backgroundColor: hasBgColor ? hero.background?.color : undefined,
+              }}
+            >
+              {hasBgImage && (
+                <div className="absolute inset-0 z-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={hero.background!.imageUrl!}
+                    alt="Hero background"
+                    className="w-full h-full object-cover"
+                  />
+                  <div
+                    className="absolute inset-0 bg-[#141413]"
+                    style={{
+                      opacity: hero.background?.overlayOpacity ?? 0.5,
+                    }}
+                  />
+                </div>
+              )}
 
-          {/* Quick Pillar Index Strip */}
-          <div id="pillars" className="mt-24 pt-10 border-t border-[#E5E2DA] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {projects.map((project, index) => (
-              <Link
-                key={project.id}
-                href={`/work/${project.slug}`}
-                className="group p-5 rounded-xl bg-[#F4F2EC] border border-[#E5E2DA] hover:border-[#C5C0B3] transition-all hover:shadow-xs flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-semibold text-[#8A8881]">
-                      PILLAR {project.pillarNumber}
-                    </span>
-                    {pillarIcons[index % pillarIcons.length]}
-                  </div>
-                  <h3 className="font-editorial text-xl text-[#141413] group-hover:text-[#64625C] transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-xs text-[#64625C] leading-relaxed line-clamp-2">
-                    {project.subtitle}
-                  </p>
+              <div className={`relative z-10 space-y-8 max-w-5xl ${hasBgImage ? "text-[#FAF9F5]" : ""}`}>
+                {/* Tag / Pre-headline */}
+                <div
+                  className={`inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border text-xs font-mono tracking-wider ${
+                    hasBgImage
+                      ? "bg-black/50 border-white/20 text-[#FAF9F5]"
+                      : "bg-[#EAE7DF] border-[#DDD9CE] text-[#64625C]"
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${hasBgImage ? "bg-amber-400" : "bg-[#141413]"}`} />
+                  <span>{hero?.badge || "CREATIVE DIRECTION & BRAND IDENTITY PORTFOLIO"}</span>
                 </div>
 
-                <div className="pt-4 flex items-center justify-between text-[11px] font-mono uppercase text-[#8A8881] group-hover:text-[#141413] transition-colors">
-                  <span>View Case Study</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                {/* Main Editorial Headline */}
+                <h1 className={`font-editorial ${headlineClass} tracking-tight leading-[1.04] ${hasBgImage ? "text-[#FAF9F5]" : "text-[#141413]"}`}>
+                  {hero?.headlinePrefix || "Translating zero-to-one concepts into"}{" "}
+                  <span className={`font-serif italic font-normal ${hasBgImage ? "text-amber-200" : "text-[#5A5852]"}`}>
+                    {hero?.headlineItalic || "shelf-ready systems"}
+                  </span>
+                  {hero?.headlineSuffix || ", commercial campaigns, & executive editorial."}
+                </h1>
+
+                {/* Sub-paragraph */}
+                <p className={`text-lg sm:text-xl max-w-3xl font-normal leading-relaxed pt-2 ${hasBgImage ? "text-[#EAE7DF]" : "text-[#5A5852]"}`}>
+                  {hero?.subheadline ||
+                    "I partner with ambitious brand founders, creative directors, and executive teams to build enduring visual worlds—from raw botanical formulation concepts and factory pre-press dielines to high-impact launch films and bilingual investor publications."}
+                </p>
+
+                {/* Quick Action Buttons & Scroll Anchor */}
+                <div className="flex flex-wrap items-center gap-4 pt-4">
+                  <a
+                    href={hero?.primaryButtonLink || "#work"}
+                    className={`inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full transition-colors ${
+                      hasBgImage
+                        ? "bg-[#FAF9F5] text-[#141413] hover:bg-white"
+                        : "bg-[#141413] text-[#FAF9F5] hover:bg-[#2D2B27]"
+                    }`}
+                  >
+                    <span>{hero?.primaryButtonText || "Explore Featured Work"}</span>
+                    <ArrowDown className="w-3.5 h-3.5" />
+                  </a>
+                  <Link
+                    href={hero?.secondaryButtonLink || "/about"}
+                    className={`inline-flex items-center gap-2 px-6 py-3.5 text-xs uppercase tracking-wider font-semibold rounded-full border transition-colors ${
+                      hasBgImage
+                        ? "border-white/40 text-[#FAF9F5] hover:bg-white/10"
+                        : "border-[#D5D1C7] text-[#141413] hover:bg-[#EAE7DF]"
+                    }`}
+                  >
+                    <span>{hero?.secondaryButtonText || "Read Profile & Approach"}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Quick Pillar Index Strip */}
+        <div id="pillars" className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 mt-16 pt-10 border-t border-[#E5E2DA] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {projects.map((project, index) => (
+            <Link
+              key={project.id}
+              href={`/work/${project.slug}`}
+              className="group p-5 rounded-xl bg-[#F4F2EC] border border-[#E5E2DA] hover:border-[#C5C0B3] transition-all hover:shadow-xs flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-semibold text-[#8A8881]">
+                    PILLAR {project.pillarNumber}
+                  </span>
+                  {pillarIcons[index % pillarIcons.length]}
+                </div>
+                <h3 className="font-editorial text-xl text-[#141413] group-hover:text-[#64625C] transition-colors">
+                  {project.title}
+                </h3>
+                <p className="text-xs text-[#64625C] leading-relaxed line-clamp-2">
+                  {project.subtitle}
+                </p>
+              </div>
+
+              <div className="pt-4 flex items-center justify-between text-[11px] font-mono uppercase text-[#8A8881] group-hover:text-[#141413] transition-colors">
+                <span>View Case Study</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </div>
+            </Link>
+          ))}
+        </div>
 
         {/* FEATURED WORK / THE 4 PILLARS SECTION */}
         <section id="work" className="py-20 md:py-28 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
